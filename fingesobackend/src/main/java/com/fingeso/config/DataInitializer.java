@@ -1,40 +1,61 @@
 package com.fingeso.config;
 
+import com.fingeso.model.Piu;       // <--- IMPORTANTE
 import com.fingeso.model.Rol;
 import com.fingeso.model.Usuario;
+import com.fingeso.repository.PiuRepository; // <--- IMPORTANTE
 import com.fingeso.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration // Comenta esta línea si quieres desactivar la creación automática en el futuro
+@Configuration
 public class DataInitializer {
 
+    // Inyectamos AMBOS repositorios aquí en los argumentos del método
     @Bean
-    CommandLineRunner initDatabase(UsuarioRepository repository) {
+    CommandLineRunner initDatabase(UsuarioRepository usuarioRepo, PiuRepository piuRepo) {
         return args -> {
 
-            // 1. ADMIN (Credencial: 00000000)
-            crearUsuarioSiNoExiste(repository, "Admin", "Sistema", "admin@usach.cl", "00000000", "admin123", Rol.ADMINISTRADOR);
+            // ==========================================
+            //           INICIALIZACIÓN DE USUARIOS
+            // ==========================================
 
-            // 2. ALUMNO / VISITA (Credencial: 11111111)
-            crearUsuarioSiNoExiste(repository, "Visita", "Estudiante", "visita@usach.cl", "11111111", "visita123", Rol.ALUMNO);
+            // 1. ADMIN
+            crearUsuarioSiNoExiste(usuarioRepo, "Admin", "Sistema", "admin@usach.cl", "00000000", "admin123", Rol.ADMINISTRADOR);
 
-            // 3. GESTOR (Credencial: 22222222)
-            crearUsuarioSiNoExiste(repository, "Juan", "Gestor", "gestor@usach.cl", "22222222", "gestor123", Rol.GESTOR);
+            // 2. ALUMNO / VISITA
+            crearUsuarioSiNoExiste(usuarioRepo, "Visita", "Estudiante", "visita@usach.cl", "11111111", "visita123", Rol.ALUMNO);
 
-            // 4. OPERADOR (Credencial: 33333333)
-            crearUsuarioSiNoExiste(repository, "Pedro", "Operador", "operador@usach.cl", "33333333", "operador123", Rol.OPERADOR);
+            // 3. GESTOR
+            crearUsuarioSiNoExiste(usuarioRepo, "Juan", "Gestor", "gestor@usach.cl", "22222222", "gestor123", Rol.GESTOR);
 
-            // 5. PROFESOR (Credencial: 44444444)
-            crearUsuarioSiNoExiste(repository, "Laura", "Profesora", "profe@usach.cl", "44444444", "profe123", Rol.PROFESOR);
+            // 4. OPERADOR
+            crearUsuarioSiNoExiste(usuarioRepo, "Pedro", "Operador", "operador@usach.cl", "33333333", "operador123", Rol.OPERADOR);
 
-            // 6. FUNCIONARIO (Credencial: 55555555)
-            crearUsuarioSiNoExiste(repository, "Carlos", "Funcionario", "func@usach.cl", "55555555", "func123", Rol.FUNCIONARIO);
+            // 5. PROFESOR
+            crearUsuarioSiNoExiste(usuarioRepo, "Laura", "Profesora", "profe@usach.cl", "44444444", "profe123", Rol.PROFESOR);
+
+            // 6. FUNCIONARIO
+            crearUsuarioSiNoExiste(usuarioRepo, "Carlos", "Funcionario", "func@usach.cl", "55555555", "func123", Rol.FUNCIONARIO);
+
+
+            // ==========================================
+            //           INICIALIZACIÓN DE PIUS
+            // ==========================================
+
+            if (piuRepo.count() == 0) {
+                piuRepo.save(new Piu("PIU-001", "Edificio M - Piso 1", "Activo"));
+                piuRepo.save(new Piu("PIU-002", "Biblioteca Central", "Inactivo"));
+                piuRepo.save(new Piu("PIU-003", "Casino EAO", "Activo"));
+                piuRepo.save(new Piu("PIU-004", "Departamento Informática", "Mantenimiento"));
+
+                System.out.println("--> Datos de PIUs iniciales cargados correctamente.");
+            }
         };
     }
 
-    // Método auxiliar para no repetir código (DRY)
+    // Método auxiliar para Usuarios
     private void crearUsuarioSiNoExiste(UsuarioRepository repository, String nombre, String apellido, String correo, String credencial, String pass, Rol rol) {
         if (repository.findByNumeroCredencial(credencial).isEmpty()) {
             Usuario usuario = new Usuario();
