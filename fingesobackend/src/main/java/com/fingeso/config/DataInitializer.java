@@ -33,7 +33,7 @@ public class DataInitializer {
             // 4. OPERADOR
             crearUsuarioSiNoExiste(usuarioRepo, "Pedro", "Operador", "operador@usach.cl", "33333333", "operador123", Rol.OPERADOR);
 
-            // 5. PROFESOR
+            // 5. PROFESOr
             crearUsuarioSiNoExiste(usuarioRepo, "Laura", "Profesora", "profe@usach.cl", "44444444", "profe123", Rol.PROFESOR);
 
             // 6. FUNCIONARIO
