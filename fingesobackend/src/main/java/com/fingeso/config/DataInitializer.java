@@ -38,8 +38,7 @@ public class DataInitializer {
 
             // 6. FUNCIONARIO
             crearUsuarioSiNoExiste(usuarioRepo, "Carlos", "Funcionario", "func@usach.cl", "55555555", "func123", Rol.FUNCIONARIO);
-
-
+            
             // ==========================================
             //           INICIALIZACIÓN DE PIUS
             // ==========================================
