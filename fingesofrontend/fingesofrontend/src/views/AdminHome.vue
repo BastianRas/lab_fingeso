@@ -1,66 +1,66 @@
 <script setup>
-import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
-// Datos falsos para visualizar la tabla
-const pius = ref([
-  { id: 1, codigo: 'PIU-001', ubicacion: 'Edificio M - Piso 1', estado: 'Activo' },
-  { id: 2, codigo: 'PIU-002', ubicacion: 'Biblioteca Central', estado: 'Inactivo' },
-  { id: 3, codigo: 'PIU-003', ubicacion: 'Casino EAO', estado: 'Activo' },
-]);
+const cerrarSesion = () => {
+  localStorage.removeItem('user');
+  router.push('/');
+};
 </script>
 
 <template>
-  <div class="dashboard">
-    <header class="header">
-      <h1>Panel de Administración GPIU</h1>
-      <button class="logout-btn" @click="$router.push('/')">Cerrar Sesión</button>
+  <div class="admin-lobby">
+    <header>
+      <h1>Panel de Administrador</h1>
+      <p>Selecciona una opción para gestionar el sistema GPIU</p>
     </header>
 
-    <main class="content">
-      <div class="actions">
-        <h2>Gestión de Puntos de Información</h2>
-        <button class="add-btn">+ Nuevo PIU</button>
+    <div class="menu-grid">
+      <div class="card" @click="router.push('/admin/pius')">
+        <span class="icon">🖥️</span>
+        <h3>Gestionar PIUs</h3>
+        <p>Agregar, editar o eliminar puntos de información.</p>
       </div>
 
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Ubicación Física</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="piu in pius" :key="piu.id">
-            <td>{{ piu.codigo }}</td>
-            <td>{{ piu.ubicacion }}</td>
-            <td>
-              <span :class="['badge', piu.estado === 'Activo' ? 'green' : 'red']">
-                {{ piu.estado }}
-              </span>
-            </td>
-            <td>
-              <button class="edit-btn">Editar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </main>
+      <div class="card" @click="alert('Funcionalidad en construcción')">
+        <span class="icon">📅</span>
+        <h3>Gestionar Eventos</h3>
+        <p>Publicar noticias y eventos en las pantallas.</p>
+      </div>
+
+      <div class="card" @click="alert('Funcionalidad en construcción')">
+        <span class="icon">🗺️</span>
+        <h3>Gestionar Mapa</h3>
+        <p>Actualizar ubicaciones y rutas del campus.</p>
+      </div>
+    </div>
+
+    <button class="logout-btn" @click="cerrarSesion">Cerrar Sesión</button>
   </div>
 </template>
 
 <style scoped>
-.dashboard { padding: 2rem; background-color: #f4f4f4; min-height: 100vh; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-.actions { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+.admin-lobby { max-width: 900px; margin: 0 auto; padding: 3rem; text-align: center; font-family: sans-serif; }
+header { margin-bottom: 3rem; }
+h1 { color: #2c3e50; font-size: 2.5rem; }
 
-/* Botones y Tablas */
-.add-btn { background: #ea7600; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
-.data-table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
-th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
-th { background-color: #2c3e50; color: white; }
-.badge { padding: 4px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; }
-.badge.green { background: #d4edda; color: #155724; }
-.badge.red { background: #f8d7da; color: #721c24; }
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+
+.card { 
+  background: white; 
+  padding: 2rem; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+  cursor: pointer; 
+  transition: transform 0.2s, border-color 0.2s; 
+  border: 2px solid transparent;
+}
+
+.card:hover { transform: translateY(-5px); border-color: #ea7600; }
+.icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+h3 { color: #ea7600; margin-bottom: 0.5rem; }
+p { color: #666; font-size: 0.9rem; }
+
+.logout-btn { background: #c0392b; color: white; border: none; padding: 0.8rem 2rem; border-radius: 25px; cursor: pointer; font-weight: bold; }
+.logout-btn:hover { background: #a93226; }
 </style>

@@ -1,11 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 
-// 1. IMPORTAMOS LAS NUEVAS VISTAS (Asegúrate de haber creado los archivos en /views)
+// Importamos las vistas existentes
 import AdminHome from '../views/AdminHome.vue'
 import GestorHome from '../views/GestorHome.vue'
 import OperadorHome from '../views/OperadorHome.vue'
 import UsuarioHome from '../views/UsuarioHome.vue'
+
+// 1. IMPORTAMOS LA NUEVA VISTA DE GESTIÓN DE PIUS
+import AdminPius from '../views/AdminPius.vue' // <-- NUEVO
 
 const routes = [
   {
@@ -13,12 +16,18 @@ const routes = [
     name: 'login',
     component: LoginView
   },
-  // 2. AGREGAMOS LAS RUTAS PARA CADA ROL
+  // --- Rutas de Administrador ---
   {
     path: '/admin',
     name: 'admin',
-    component: AdminHome
+    component: AdminHome // Este es el "Lobby" o Menú Principal
   },
+  {
+    path: '/admin/pius',   // <-- NUEVO: La URL para gestionar dispositivos
+    name: 'admin-pius',
+    component: AdminPius   // <-- NUEVO: El componente con la tabla
+  },
+  // -----------------------------
   {
     path: '/gestor',
     name: 'gestor',
@@ -32,12 +41,12 @@ const routes = [
   {
     path: '/home',
     name: 'home',
-    component: UsuarioHome // Esta la usaremos para Alumnos, Profes y Funcionarios
+    component: UsuarioHome 
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(), // O puedes usar: createWebHistory(import.meta.env.BASE_URL)
+  history: createWebHistory(), 
   routes
 })
 
