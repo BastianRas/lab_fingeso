@@ -40,9 +40,10 @@ public class DataInitializer {
 
             // 3. EVENTOS (Noticias)
             if (eventoRepo.count() == 0) {
-                eventoRepo.save(new Evento("Feria de Software 2026", "Presentación de proyectos finales de Ingeniería.", LocalDate.now().plusDays(10), "Académico"));
-                eventoRepo.save(new Evento("Suspensión de Agua", "Corte programado en el sector norte del campus.", LocalDate.now().plusDays(1), "Aviso"));
-                eventoRepo.save(new Evento("Charla IA Generativa", "Expositor invitado de Google en el Auditorio.", LocalDate.now().plusDays(5), "Cultural"));
+                // Usamos fechas futuras (.plusDays) para que se vean vigentes
+                eventoRepo.save(new Evento("Bienvenida Cachorros 2026", "Actividad en el Foro Griego.", LocalDate.now().plusDays(5), "Cultural"));
+                eventoRepo.save(new Evento("Corte de Luz Programado", "Sector EAO por mantención.", LocalDate.now().plusDays(2), "Aviso"));
+                eventoRepo.save(new Evento("Charla de Ciberseguridad", "Auditorio Depto Informática.", LocalDate.now().plusDays(10), "Académico"));
                 System.out.println("--> Eventos iniciales cargados.");
             }
 
