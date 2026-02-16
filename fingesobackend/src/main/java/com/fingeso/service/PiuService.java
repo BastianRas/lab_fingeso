@@ -28,4 +28,7 @@ public class PiuService {
     public Optional<Piu> obtenerPorId(Long id) {
         return piuRepository.findById(id);
     }
+    public List<Piu> obtenerPorEstado(String estado) {
+        return piuRepository.findByEstado(estado);
+    }
 }

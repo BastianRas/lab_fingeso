@@ -31,58 +31,47 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Rol rol; // Campo para validar el rol seleccionado
 
+
+    // getters y setters
     public Long getUsuarioId() {
         return usuarioId;
     }
-
     public void setUsuarioId(Long usuarioId) {
         this.usuarioId = usuarioId;
     }
-
     public String getNombre() {
         return nombre;
     }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-
     public String getApellido() {
         return apellido;
     }
-
     public void setApellido(String apellido) {
         this.apellido = apellido;
     }
-
     public String getCorreo() {
         return correo;
     }
-
     public void setCorreo(String correo) {
         this.correo = correo;
     }
-
     public String getNumeroCredencial() {
         return numeroCredencial;
     }
-
     public void setNumeroCredencial(String numeroCredencial) {
         this.numeroCredencial = numeroCredencial;
     }
-
     public String getContrasena() {
         return contrasena;
     }
-
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
     }
-
     public Rol getRol() {
         return rol;
     }
-
     public void setRol(Rol rol) {
         this.rol = rol;
     }

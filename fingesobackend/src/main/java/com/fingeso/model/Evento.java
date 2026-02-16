@@ -21,6 +21,8 @@ public class Evento {
 
     private String tipo; // Ej: "Académico", "Aviso"
 
+    //private String ubicacion;
+
     public Evento() {}
 
     public Evento(String titulo, String descripcion, LocalDate fecha, String tipo) {
