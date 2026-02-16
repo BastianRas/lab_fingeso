@@ -1,86 +1,92 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import CarteleraList from '../components/CarteleraList.vue'; 
 
 const router = useRouter();
-const usuario = ref(null);
+const alumnoNombre = ref("Matías"); 
 
-onMounted(() => {
-  const userStored = localStorage.getItem('user');
-  if (userStored) {
-    usuario.value = JSON.parse(userStored);
-    // Si NO es alumno, lo sacamos de aquí (seguridad básica)
-    if (usuario.value.rol !== 'ALUMNO' && usuario.value.rol !== 'VISITA') {
-       // Opcional: router.push('/login'); 
-    }
-  } else {
-    router.push('/');
-  }
+// Datos simulados del alumno
+const proximaClase = ref({
+  materia: "Ingeniería de Software",
+  sala: "Sala 202 - Depto Informática",
+  hora: "14:30 PM"
 });
 
-const cerrarSesion = () => {
-  localStorage.removeItem('user');
-  router.push('/');
+const irAlMapa = () => {
+  router.push('/mapa');
 };
 </script>
 
 <template>
-  <div class="student-home">
-    <header class="header">
-      <div class="user-info">
-        <h1>Hola, {{ usuario?.nombre }}</h1>
-        <span class="badge">Estudiante</span>
+  <div class="dashboard-container">
+    
+    <header class="user-header">
+      <div class="welcome-text">
+        <h2>Hola, {{ alumnoNombre }} ✌️</h2>
+        <p>Estudiante Regular</p>
       </div>
-      <button class="logout-btn" @click="cerrarSesion">Salir</button>
+      <div class="avatar" style="background-color: #3498db;">🎓</div>
     </header>
 
-    <main class="grid-container">
-      
-      <div class="card info-card" @click="router.push('/cartelera')">
-        <div class="icon-circle">📢</div>
-        <h3>Cartelera USACH</h3>
-        <p>Ver noticias, eventos y mapa</p>
+    <section class="urgent-card student-card">
+      <div class="card-header">
+        <span class="badge-blue">Próxima Clase</span>
+        <h3>{{ proximaClase.materia }}</h3>
       </div>
-
-      <div class="card">
-        <div class="icon-circle">📅</div>
-        <h3>Mi Horario</h3>
-        <p>Clases de hoy</p>
+      <div class="card-body">
+        <div class="info-row">
+          <i class="fas fa-map-pin"></i> 
+          <span class="highlight-location">{{ proximaClase.sala }}</span>
+        </div>
+        <div class="info-row">
+          <i class="far fa-clock"></i> 
+          <span>{{ proximaClase.hora }}</span>
+        </div>
       </div>
+      <button class="primary-btn" style="background-color: #3498db;">
+        📚 Ver Material de Estudio
+      </button>
+    </section>
 
-      <div class="card">
-        <div class="icon-circle">🎓</div>
-        <h3>Mis Notas</h3>
-        <p>Intranet Docente</p>
+    <section class="quick-actions">
+      <h3>Mis Accesos</h3>
+      <div class="grid-buttons">
+        <button class="action-btn" @click="irAlMapa">
+          <span class="icon">🗺️</span> <span class="text">Ver Campus</span>
+        </button>
+        <button class="action-btn">
+          <span class="icon">📊</span> <span class="text">Mis Notas</span>
+        </button>
+        <button class="action-btn">
+          <span class="icon">📄</span> <span class="text">Certificados</span>
+        </button>
       </div>
+    </section>
 
-      <div class="card">
-        <div class="icon-circle">📝</div>
-        <h3>Certificados</h3>
-        <p>Alumno regular</p>
-      </div>
+    <section class="news-section">
+      <h3>📢 Cartelera USACH</h3>
+      <CarteleraList />
+    </section>
 
-    </main>
   </div>
 </template>
 
 <style scoped>
-.student-home { min-height: 100vh; background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-.header { background: #ea7600; color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-.user-info h1 { margin: 0; font-size: 1.5rem; }
-.badge { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
-.logout-btn { background: white; color: #ea7600; border: none; padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: bold; cursor: pointer; }
+/* Estilos Base */
+.dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: sans-serif; }
+.user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.avatar { color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-.grid-container { max-width: 1000px; margin: 2rem auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; padding: 0 1rem; }
+/* Tarjeta Azul para Estudiante */
+.urgent-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border-left: 5px solid #3498db; }
+.badge-blue { background: #e3f2fd; color: #1565c0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+.highlight-location { font-weight: bold; font-size: 1.1rem; color: #2c3e50; }
+.primary-btn { color: white; width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
-.card { background: white; padding: 2rem; border-radius: 12px; text-align: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-
-/* Destacar la tarjeta de información */
-.info-card { border: 2px solid #3498db; background: #f0f8ff; }
-.info-card .icon-circle { background: #3498db; }
-
-.icon-circle { width: 60px; height: 60px; background: #ea7600; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; }
-h3 { margin: 0 0 0.5rem; color: #333; }
-p { margin: 0; color: #666; font-size: 0.9rem; }
+.grid-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+.action-btn { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; }
+.action-btn:hover { background-color: #e3f2fd; border-color: #3498db; }
+.icon { font-size: 1.5rem; }
+.text { font-size: 0.85rem; font-weight: 500; }
 </style>
