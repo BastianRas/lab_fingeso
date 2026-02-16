@@ -26,8 +26,6 @@ const handleLogin = async () => {
     const usuario = await authService.login(correo.value, numeroCredencial.value, rolSeleccionado.value);
     
     console.log("Login exitoso:", usuario);
-    // Puedes quitar el alert si prefieres que entre directo
-    // alert(`Bienvenido ${usuario.nombre} (${usuario.rol})`);
     
     // --- LÓGICA DE REDIRECCIÓN POR ROL ---
     switch (usuario.rol) {
@@ -40,14 +38,21 @@ const handleLogin = async () => {
       case 'OPERADOR':
         router.push('/operador');
         break;
+        
+      // AQUI ESTA EL CAMBIO SOLICITADO:
       case 'ALUMNO':
-      case 'PROFESOR':
-      case 'FUNCIONARIO':
-        router.push('/home'); // Estos 3 roles van a la vista general de usuario
+        router.push('/alumno'); // Antes era /home (recuerda renombrar la ruta en tu router)
         break;
+      case 'PROFESOR':
+        router.push('/profesor'); // Nueva vista exclusiva para profes
+        break;
+      case 'FUNCIONARIO':
+        router.push('/funcionario'); // Nueva vista exclusiva para funcionarios
+        break;
+        
       default:
         console.warn("Rol no reconocido:", usuario.rol);
-        router.push('/home'); // Por seguridad, mandamos al home por defecto
+        router.push('/alumno'); // Por defecto mandamos a la vista de alumno si falla algo
     }
     // -------------------------------------
 
@@ -154,11 +159,11 @@ label {
 input, select {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #000000;
+  border: 1px solid #ccc; /* Ajusté el borde a gris suave */
   border-radius: 6px;
   font-size: 1rem;
   box-sizing: border-box;
-  background-color: #d0c8c8; /* Cambié el fondo gris oscuro original a blanco para mejor lectura */
+  background-color: #ffffff; /* Fondo blanco para inputs */
 }
 
 input:focus, select:focus {
@@ -170,7 +175,7 @@ button {
   width: 100%;
   padding: 0.9rem;
   background-color: #ea7600;
-  color: rgb(137, 115, 115);
+  color: white; /* Letra blanca para mejor contraste */
   border: none;
   border-radius: 6px;
   font-size: 1rem;
