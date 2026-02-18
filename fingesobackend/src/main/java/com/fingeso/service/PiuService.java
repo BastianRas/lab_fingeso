@@ -28,4 +28,21 @@ public class PiuService {
     public Optional<Piu> obtenerPorId(Long id) {
         return piuRepository.findById(id);
     }
+
+    // Metodo para modificar PIU
+    public Piu actualizarPiu(Long id, Piu piuDetalles) {
+        Optional<Piu> piuOptional = piuRepository.findById(id);
+
+        if (piuOptional.isPresent()){
+            Piu piuExistente = piuOptional.get();
+            piuExistente.setCodigo(piuDetalles.getCodigo());
+            piuExistente.setUbicacion(piuDetalles.getUbicacion());
+            piuExistente.setEstado(piuDetalles.getEstado());
+            // ¿Agregar ubicación?
+
+            return piuRepository.save(piuExistente);
+        } else {
+            return null; // Piu no existe
+        }
+    }
 }

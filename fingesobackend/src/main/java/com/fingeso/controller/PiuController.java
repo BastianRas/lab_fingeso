@@ -31,4 +31,16 @@ public class PiuController {
         piuService.eliminarPiu(id);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Piu> actualizarPiu(@PathVariable Long id, @RequestBody Piu piuDetalles) {
+        Piu piuActualizado = piuService.actualizarPiu(id, piuDetalles);
+
+        if (piuActualizado != null) {
+            return ResponseEntity.ok(piuActualizado);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

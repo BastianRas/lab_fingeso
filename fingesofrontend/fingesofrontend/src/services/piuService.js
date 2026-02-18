@@ -9,6 +9,9 @@ export default {
   crear(piu) {
     return axios.post(API_URL, piu);
   },
+  actualizar(id, piu){
+    return axios.put(`${API_URL}/${id}`, piu);
+  },
   eliminar(id) {
     return axios.delete(`${API_URL}/${id}`);
   }

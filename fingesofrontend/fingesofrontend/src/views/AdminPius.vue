@@ -3,8 +3,14 @@ import { ref, onMounted } from 'vue';
 import piuService from '../services/piuService';
 
 const pius = ref([]);
-const nuevoPiu = ref({ codigo: '', ubicacion: '', estado: 'Activo' });
+const idEditando = ref(null);
 const mostrandoFormulario = ref(false);
+
+const datosFormulario = ref({
+  codigo: '',
+  ubicacion: '',
+  estado: 'Activo'
+});
 
 const cargarPius = async () => {
   try {
@@ -17,13 +23,37 @@ const cargarPius = async () => {
 
 const guardarPiu = async () => {
   try {
-    await piuService.crear(nuevoPiu.value);
+    if (idEditando.value) {
+      await piuService.actualizar(idEditando.value, datosFormulario.value);
+      alert("PIU actualizado correctamente");
+    } else {
+      await piuService.crear(datosFormulario.value);
+      alert("PIU creado correctamente");
+    }
+    
+    limpiarFormulario();
     await cargarPius();
-    nuevoPiu.value = { codigo: '', ubicacion: '', estado: 'Activo' };
-    mostrandoFormulario.value = false;
   } catch (error) {
-    alert("Error al guardar el PIU");
+    console.error(error);
+    alert("Error al guardar");
   }
+};
+
+const cargarEdicion = (piu) => {
+  idEditando.value = piu.id;
+  mostrandoFormulario.value = true;
+
+  datosFormulario.value = {
+    codigo: piu.codigo,
+    ubicacion: piu.ubicacion,
+    estado: piu.estado
+  };
+};
+
+const limpiarFormulario = () => {
+  idEditando.value = null;
+  datosFormulario.value = { codigo: '', ubicacion: '', estado: 'Activo'};
+  mostrandoFormulario.value = false;
 };
 
 const eliminarPiu = async (id) => {
@@ -51,21 +81,27 @@ onMounted(() => {
 
     <main class="content">
       <div class="actions">
-        <button class="add-btn" @click="mostrandoFormulario = !mostrandoFormulario">
+        <button class="add-btn" @click="mostrandoFormulario ? limpiarFormulario() : (mostrandoFormulario = true)">
           {{ mostrandoFormulario ? 'Cancelar' : '+ Nuevo PIU' }}
         </button>
       </div>
 
       <div v-if="mostrandoFormulario" class="form-card">
-        <h3>Nuevo Dispositivo</h3>
-        <input v-model="nuevoPiu.codigo" placeholder="Código (Ej: PIU-004)" />
-        <input v-model="nuevoPiu.ubicacion" placeholder="Ubicación (Ej: Foro)" />
-        <select v-model="nuevoPiu.estado">
+        <h3>{{ idEditando ? 'Editar Dispositivo' : 'Nuevo Dispositivo' }}</h3>
+        
+        <input v-model="datosFormulario.codigo" placeholder="Código (Ej: PIU-004)" />
+        <input v-model="datosFormulario.ubicacion" placeholder="Ubicación (Ej: Foro)" />
+        <select v-model="datosFormulario.estado">
           <option>Activo</option>
           <option>Inactivo</option>
           <option>Mantenimiento</option>
         </select>
-        <button @click="guardarPiu" class="save-btn">Guardar</button>
+
+        <div class="form-buttons">
+          <button @click="guardarPiu" class="save-btn">
+            {{ idEditando ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
       </div>
 
       <table class="data-table">
@@ -87,7 +123,8 @@ onMounted(() => {
               </span>
             </td>
             <td>
-              <button class="delete-btn" @click="eliminarPiu(piu.id)">Eliminar</button>
+              <button class="edit-btn" @click="cargarEdicion(piu)"> Editar</button>
+              <button class="delete-btn" @click="eliminarPiu(piu.id)"> Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -102,14 +139,19 @@ onMounted(() => {
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .back-btn { background: #555; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
 .add-btn { background: #ea7600; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
-.save-btn { background: #27ae60; color: white; border: none; padding: 0.5rem; width: 100%; margin-top: 10px; cursor: pointer; }
-.delete-btn { background: #c0392b; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; }
+.save-btn { background: #27ae60; color: white; border: none; padding: 0.6rem 1.2rem; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; }
+.delete-btn { background: #c0392b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; margin-left: 5px; }
+.edit-btn { background: #f39c12; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 5px; }
 .data-table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
 th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
 th { background-color: #2c3e50; color: white; }
 .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; }
 .badge.green { background: #d4edda; color: #155724; }
 .badge.red { background: #f8d7da; color: #721c24; }
-.form-card { background: white; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+
+.form-card { background: white; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; border-left: 5px solid #ea7600; }
+.form-card h3 { width: 100%; margin-top: 0; margin-bottom: 10px; color: #333; }
+input, select { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+.form-buttons { flex-basis: 100%; display: flex; justify-content: flex-end; margin-top: 10px; }
+.form-buttons button { width: auto; min-width: 150px; }
 </style>
