@@ -18,7 +18,7 @@ import MapaCampus from '../components/MapaCampus.vue'
 import CarteleraView from '../views/CarteleraView.vue'
 
 const routes = [
-  { path: '/', name: 'admin-home', component: AdminHome},
+  { path: '/', name: 'Login', component: LoginView},
 
   // --- RUTAS DE ROLES ---
   { path: '/alumno', name: 'alumno', component: AlumnoView },
