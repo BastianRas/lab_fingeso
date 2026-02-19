@@ -24,4 +24,17 @@ public class EventoService {
     public void eliminarEvento(Long id) {
         eventoRepository.deleteById(id);
     }
+
+    // Metodo para actualizar eventos en vista de administrador
+    public Evento actualizarEvento(Long id, Evento eventoDetalles) {
+        Evento eventoExistente = eventoRepository.findById(id).orElse(null);
+        if (eventoExistente != null) {
+            eventoExistente.setTitulo(eventoDetalles.getTitulo());
+            eventoExistente.setDescripcion(eventoDetalles.getDescripcion());
+            eventoExistente.setFecha(eventoDetalles.getFecha());
+            eventoExistente.setTipo(eventoDetalles.getTipo());
+            return eventoRepository.save(eventoExistente);
+        }
+        return null;
+    }
 }

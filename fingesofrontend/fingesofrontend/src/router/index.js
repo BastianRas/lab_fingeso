@@ -9,6 +9,7 @@ import FuncionarioView from '../views/FuncionarioView.vue'
 // Vistas de Admin y otros
 import AdminHome from '../views/AdminHome.vue'
 import AdminPius from '../views/AdminPius.vue'
+import AdminEventos from '../views/AdminEventos.vue'
 import GestorHome from '../views/GestorHome.vue'
 import OperadorHome from '../views/OperadorHome.vue'
 
@@ -18,7 +19,7 @@ import MapaCampus from '../components/MapaCampus.vue'
 import CarteleraView from '../views/CarteleraView.vue'
 
 const routes = [
-  { path: '/', name: 'Login', component: LoginView},
+  { path: '/', name: 'Login', component: LoginView },
 
   // --- RUTAS DE ROLES ---
   { path: '/alumno', name: 'alumno', component: AlumnoView },
@@ -32,6 +33,7 @@ const routes = [
   // --- RUTAS ADMINISTRATIVAS ---
   { path: '/admin', name: 'admin', component: AdminHome },
   { path: '/admin/pius', name: 'admin-pius', component: AdminPius },
+  { path: '/admin/eventos', name: 'admin-eventos', component: AdminEventos },
   { path: '/gestor', name: 'gestor', component: GestorHome },
   { path: '/operador', name: 'operador', component: OperadorHome },
 ]

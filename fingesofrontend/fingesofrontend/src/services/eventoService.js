@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Asegúrate que el puerto coincida con tu backend (8080)
 const API_URL = 'http://localhost:8080/api/eventos';
 
 export default {
@@ -10,6 +9,10 @@ export default {
   // Agregamos estos por si los usamos luego en el Admin
   crear(evento) {
     return axios.post(API_URL, evento);
+  },
+  // Actualizar como Admin 
+  actualizar(id, evento) {
+    return axios.put(`${API_URL}/${id}`, evento);
   },
   eliminar(id) {
     return axios.delete(`${API_URL}/${id}`);

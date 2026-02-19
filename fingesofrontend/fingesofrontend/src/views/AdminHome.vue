@@ -23,6 +23,12 @@ const cerrarSesion = () => {
         <p>Administrar dispositivos</p>
       </div>
 
+      <div class="card event-card" @click="router.push('/admin/eventos')">
+        <span class="icon">📅</span>
+        <h3>Gestionar Cartelera</h3>
+        <p>Crear y editar avisos</p>
+      </div>
+
       <div class="card info-card" @click="router.push('/cartelera')">
         <span class="icon">📢</span>
         <h3>Ver Cartelera</h3>
@@ -46,7 +52,8 @@ const cerrarSesion = () => {
 .card { background: white; padding: 2rem; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .card:hover { transform: translateY(-5px); }
 
-.action-card { border-top: 5px solid #c0392b; } /* Rojo Admin */
+.action-card { border-top: 5px solid #c0392b; } /* Rojo PIUs */
+.event-card { border-top: 5px solid #27ae60; } /* Verde Eventos */
 .info-card { border-top: 5px solid #3498db; background-color: #fbfdff; } /* Azul Info */
 
 .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
