@@ -10,6 +10,7 @@ import FuncionarioView from '../views/FuncionarioView.vue'
 import AdminHome from '../views/AdminHome.vue'
 import AdminPius from '../views/AdminPius.vue'
 import AdminEventos from '../views/AdminEventos.vue'
+import AdminUsuarios from '../views/AdminUsuarios.vue'
 import GestorHome from '../views/GestorHome.vue'
 import OperadorHome from '../views/OperadorHome.vue'
 
@@ -34,6 +35,7 @@ const routes = [
   { path: '/admin', name: 'admin', component: AdminHome },
   { path: '/admin/pius', name: 'admin-pius', component: AdminPius },
   { path: '/admin/eventos', name: 'admin-eventos', component: AdminEventos },
+  { path: '/admin/usuarios', name: 'admin-usuarios', component: AdminUsuarios },
   { path: '/gestor', name: 'gestor', component: GestorHome },
   { path: '/operador', name: 'operador', component: OperadorHome },
 ]
