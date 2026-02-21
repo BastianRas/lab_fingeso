@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker } from "@vue-leaflet/vue-leaflet";
+
+import piuService from '../services/piuService';
 
 // Coordenadas USACH (Centro aproximado: Foro/EAO)
 const zoom = ref(16);
@@ -16,53 +18,77 @@ const lugares = ref([
   { id: 5, nombre: "Casino Central", coords: [-33.4480, -70.6855], descripcion: "Almuerzos Junaeb y cafetería." },
 ]);
 
+const pius = ref([]); 
 const busqueda = ref("");
 const lugarSeleccionado = ref(null);
 
-// Función para buscar y centrar el mapa
-const buscarLugar = () => {
-  const encontrado = lugares.value.find(l => 
-    l.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
-  );
-  
-  if (encontrado) {
-    center.value = encontrado.coords;
-    lugarSeleccionado.value = encontrado;
-    zoom.value = 18; // Acercar cámara
-  } else {
-    alert("Lugar no encontrado en la base de datos.");
+// Simulación de carga de PIUs desde backend
+const cargarPius = async () => {
+  try {
+    const response = await piuService.obtenerTodos();
+    
+    pius.value = response.data.filter(piu => piu.latitud != null && piu.longitud != null);
+    console.log("PIUs listos para dibujar:", pius.value); 
+    
+  } catch (error) {
+    console.error("Error cargando los PIUs:", error);
   }
 };
 
-const centrarEn = (lugar) => {
-  center.value = lugar.coords;
-  lugarSeleccionado.value = lugar;
+// Función para buscar y centrar el mapa
+const buscarLugar = () => {
+  const query = busqueda.value.toLowerCase();
+  
+  // Buscar en lugares fijos
+  let encontrado = lugares.value.find(l => l.nombre.toLowerCase().includes(query));
+  
+  // Si no es lugar fijo, buscar en PIUs
+  if (!encontrado) {
+    encontrado = pius.value.find(p => p.codigo.toLowerCase().includes(query) || p.ubicacion.toLowerCase().includes(query));
+    if (encontrado) {
+      encontrado.coords = [encontrado.latitud, encontrado.longitud]; 
+    }
+  }
+  
+  if (encontrado) {
+    center.value = encontrado.coords;
+    zoom.value = 18; 
+  } else {
+    alert("Lugar o PIU no encontrado en el sistema.");
+  }
+};
+
+const centrarEn = (coords) => {
+  center.value = coords;
   zoom.value = 18;
 };
+
+onMounted(() => {
+  cargarPius();
+});
 </script>
 
 <template>
   <div class="mapa-container">
-    
     <div class="control-panel">
-      <h3>📍 Ubicación de Salas</h3>
+      <h3>📍 Mapa del Campus y PIUs</h3>
       <div class="search-box">
         <input 
           v-model="busqueda" 
           @keyup.enter="buscarLugar"
-          placeholder="Ej: Pabellón Forma, Informática..." 
+          placeholder="Buscar lugar o código de PIU..." 
         />
         <button @click="buscarLugar">Buscar</button>
       </div>
       
       <div class="quick-list">
-        <span v-for="lugar in lugares" :key="lugar.id" @click="centrarEn(lugar)" class="pill">
+        <span v-for="lugar in lugares" :key="'lug-'+lugar.id" @click="centrarEn(lugar.coords)" class="pill">
           {{ lugar.nombre }}
         </span>
       </div>
     </div>
 
-    <div class="map-frame">
+    <div class="map-frame" style="height: 400px; width: 100%;">
       <l-map ref="map" v-model:zoom="zoom" v-model:center="center" :use-global-leaflet="false">
         <l-tile-layer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -72,18 +98,33 @@ const centrarEn = (lugar) => {
 
         <l-marker 
           v-for="lugar in lugares" 
-          :key="lugar.id" 
+          :key="'lug-mark-'+lugar.id" 
           :lat-lng="lugar.coords"
         >
           <l-tooltip>{{ lugar.nombre }}</l-tooltip>
           <l-popup>
             <strong>{{ lugar.nombre }}</strong>
             <p>{{ lugar.descripcion }}</p>
-            <a :href="`https://www.google.com/maps/dir/?api=1&destination=${lugar.coords[0]},${lugar.coords[1]}`" target="_blank" class="waze-link">
-              🚗 Cómo llegar (Google Maps)
-            </a>
           </l-popup>
         </l-marker>
+
+        <l-circle-marker 
+          v-for="piu in pius" 
+          :key="'piu-'+piu.id" 
+          :lat-lng="[parseFloat(piu.latitud), parseFloat(piu.longitud)]"
+          :radius="8"
+          color="#c0392b"
+          fill-color="#e74c3c"
+          :fill-opacity="0.9"
+        >
+          <l-tooltip>🖥️ {{ piu.codigo }}</l-tooltip>
+          <l-popup>
+            <strong>🖥️ {{ piu.codigo }}</strong>
+            <p>Ref: {{ piu.ubicacion }}</p>
+            <p><em>Estado: {{ piu.estado }}</em></p>
+          </l-popup>
+        </l-circle-marker>
+
       </l-map>
     </div>
   </div>

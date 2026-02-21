@@ -9,7 +9,9 @@ const mostrandoFormulario = ref(false);
 const datosFormulario = ref({
   codigo: '',
   ubicacion: '',
-  estado: 'Activo'
+  estado: 'Activo',
+  latitud: null,
+  longitud: null
 });
 
 const cargarPius = async () => {
@@ -46,13 +48,15 @@ const cargarEdicion = (piu) => {
   datosFormulario.value = {
     codigo: piu.codigo,
     ubicacion: piu.ubicacion,
-    estado: piu.estado
+    estado: piu.estado,
+    latitud: piu.latitud,
+    longitud: piu.longitud
   };
 };
 
 const limpiarFormulario = () => {
   idEditando.value = null;
-  datosFormulario.value = { codigo: '', ubicacion: '', estado: 'Activo'};
+  datosFormulario.value = { codigo: '', ubicacion: '', estado: 'Activo', latitud: null, longitud: null };
   mostrandoFormulario.value = false;
 };
 
@@ -97,6 +101,11 @@ onMounted(() => {
           <option>Mantenimiento</option>
         </select>
 
+        <div class="form-inputs">
+          <input v-model="datosFormulario.latitud" type="number" step="any" placeholder="Latitud (Ej: -33.4485)" required/>
+          <input v-model="datosFormulario.longitud" type="number" step="any" placeholder="Longitud (Ej: -70.6693)" required/>
+        </div>
+
         <div class="form-buttons">
           <button @click="guardarPiu" class="save-btn">
             {{ idEditando ? 'Actualizar' : 'Guardar' }}
@@ -108,15 +117,17 @@ onMounted(() => {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Ubicación Física</th>
-            <th>Estado</th>
+            <th>Ubicación</th>
+            <th>Coordenadas</th> <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="piu in pius" :key="piu.id">
-            <td>{{ piu.codigo }}</td>
+            <td><strong>{{ piu.codigo }}</strong></td>
             <td>{{ piu.ubicacion }}</td>
+
+            <td style="font-size: 0.85rem; color: #555;">Lat: {{ piu.latitud }} <br> Lng: {{ piu.longitud }}</td>
             <td>
               <span :class="['badge', piu.estado === 'Activo' ? 'green' : 'red']">
                 {{ piu.estado }}
