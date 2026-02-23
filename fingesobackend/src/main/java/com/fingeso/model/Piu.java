@@ -19,6 +19,9 @@ public class Piu {
     @Column(nullable = false)
     private String estado; // "Activo", "Inactivo", "Mantenimiento"
 
+    private Double latitud;
+    private Double longitud;
+
     // Constructores, Getters y Setters
     public Piu() {}
 
@@ -39,4 +42,10 @@ public class Piu {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public Double getLatitud() { return latitud; }
+    public void setLatitud(Double latitud) { this.latitud = latitud; }
+
+    public Double getLongitud() { return longitud; }
+    public void setLongitud(Double longitud) { this.longitud = longitud; }
 }

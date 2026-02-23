@@ -58,4 +58,23 @@ public class UsuarioService {
         }
         return null; // Retorna null si falla alguna validación
     }
+
+    // Metodo para modificar usuario
+    public Usuario actualizarUsuario(Long id, Usuario detalles) {
+        Usuario existente = usuarioRepository.findById(id).orElse(null);
+        if (existente != null) {
+            existente.setNombre(detalles.getNombre());
+            existente.setApellido(detalles.getApellido());
+            existente.setCorreo(detalles.getCorreo());
+            existente.setNumeroCredencial(detalles.getNumeroCredencial());
+            existente.setRol(detalles.getRol());
+            return usuarioRepository.save(existente);
+        }
+        return null;
+    }
+
+    // Metodo para borrar usuario
+    public void eliminarUsuario(Long id) {
+        usuarioRepository.deleteById(id);
+    }
 }

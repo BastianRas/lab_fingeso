@@ -6,8 +6,11 @@ import com.fingeso.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/usuario")
+@RequestMapping("/api/usuario")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -34,5 +37,24 @@ public class UsuarioController {
     @PostMapping("/crearUsuario")
     public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
         return ResponseEntity.ok(usuarioService.guardarUsuario(usuario));
+    }
+
+    @GetMapping
+    public List<Usuario> listarUsuarios() {
+        return usuarioService.obtenerUsuarios();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
+        Usuario actualizado = usuarioService.actualizarUsuario(id, usuario);
+        if (actualizado != null) {
+            return ResponseEntity.ok(actualizado);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("{id}")
+    public void eliminarUsuario(@PathVariable Long id) {
+        usuarioService.eliminarUsuario(id);
     }
 }

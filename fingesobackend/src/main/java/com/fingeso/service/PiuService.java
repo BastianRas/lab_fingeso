@@ -38,7 +38,8 @@ public class PiuService {
             piuExistente.setCodigo(piuDetalles.getCodigo());
             piuExistente.setUbicacion(piuDetalles.getUbicacion());
             piuExistente.setEstado(piuDetalles.getEstado());
-            // ¿Agregar ubicación?
+            piuExistente.setLatitud(piuDetalles.getLatitud());
+            piuExistente.setLongitud(piuDetalles.getLongitud());
 
             return piuRepository.save(piuExistente);
         } else {
