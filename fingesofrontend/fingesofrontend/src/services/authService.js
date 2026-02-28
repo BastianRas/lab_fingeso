@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/usuario';
+const API_URL = 'http://localhost:8081/api/usuario';
 
 export default {
   async login(correo, numeroCredencial, rol) {

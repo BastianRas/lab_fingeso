@@ -1,24 +1,22 @@
 package com.fingeso.config;
 
-import com.fingeso.model.Evento;         // <--- Importamos Evento
-import com.fingeso.model.Piu;
-import com.fingeso.model.Rol;
-import com.fingeso.model.Usuario;
-import com.fingeso.repository.EventoRepository; // <--- Importamos Repo de Eventos
-import com.fingeso.repository.PiuRepository;
-import com.fingeso.repository.UsuarioRepository;
+import com.fingeso.model.*;
+import com.fingeso.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.LocalDate; // <--- Necesario para las fechas
+import java.time.LocalDate;
+import java.util.List;
 
 @Configuration
 public class DataInitializer {
 
     // Inyectamos los 3 repositorios: Usuarios, PIUs y Eventos
     @Bean
-    CommandLineRunner initDatabase(UsuarioRepository usuarioRepo, PiuRepository piuRepo, EventoRepository eventoRepo) {
+    CommandLineRunner initDatabase(UsuarioRepository usuarioRepo, PiuRepository piuRepo, EventoRepository eventoRepo,
+                                   CarreraRepository carreraRepo, ClaseRepository claseRepo,
+                                   MatriculaAlumnoRepository matriculaRepo) {
         return args -> {
 
             // 1. USUARIOS
@@ -40,11 +38,36 @@ public class DataInitializer {
 
             // 3. EVENTOS (Noticias)
             if (eventoRepo.count() == 0) {
-                // Usamos fechas futuras (.plusDays) para que se vean vigentes
                 eventoRepo.save(new Evento("Bienvenida Cachorros 2026", "Actividad en el Foro Griego.", LocalDate.now().plusDays(5), "Cultural"));
                 eventoRepo.save(new Evento("Corte de Luz Programado", "Sector EAO por mantención.", LocalDate.now().plusDays(2), "Aviso"));
                 eventoRepo.save(new Evento("Charla de Ciberseguridad", "Auditorio Depto Informática.", LocalDate.now().plusDays(10), "Académico"));
                 System.out.println("--> Eventos iniciales cargados.");
+            }
+
+            // 4. CARRERAS, CLASES Y MATRÍCULA
+            if (carreraRepo.count() == 0) {
+                Carrera ingInfo = new Carrera("Ingeniería en Informática", "Facultad de Ingeniería");
+                carreraRepo.save(ingInfo);
+
+                Clase fingeso = new Clase("Fundamentos de Ingeniería de Software", "INF-3454", "L2 W2", "D-101", "Laura Profesora", "2026-1", ingInfo);
+                Clase sistemas = new Clase("Sistemas Operativos", "INF-3321", "M3 J3", "D-203", "Laura Profesora", "2026-1", ingInfo);
+                Clase redes = new Clase("Redes de Computadores", "INF-3410", "V1 V2", "E-105", "Laura Profesora", "2026-1", ingInfo);
+
+                usuarioRepo.findByCorreo("profe@usach.cl").ifPresent(profe -> {
+                    fingeso.setProfesorUsuario(profe);
+                    sistemas.setProfesorUsuario(profe);
+                    redes.setProfesorUsuario(profe);
+                });
+
+                claseRepo.saveAll(List.of(fingeso, sistemas, redes));
+
+                usuarioRepo.findByCorreo("visita@usach.cl").ifPresent(alumno -> {
+                    if (matriculaRepo.findByAlumnoUsuarioId(alumno.getUsuarioId()).isEmpty()) {
+                        MatriculaAlumno matricula = new MatriculaAlumno(alumno, ingInfo, EstadoMatricula.ACTIVA, List.of(fingeso, sistemas, redes));
+                        matriculaRepo.save(matricula);
+                        System.out.println("--> Matrícula del alumno cargada.");
+                    }
+                });
             }
 
         }; // <--- Cierre del lambda (args -> {})

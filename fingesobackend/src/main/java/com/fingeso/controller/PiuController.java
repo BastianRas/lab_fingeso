@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pius")
-@CrossOrigin(origins = "http://localhost:5173") // Permite conexión con Vue
+@CrossOrigin(origins = "*") // Permite conexión con Vue
 public class PiuController {
 
     @Autowired
