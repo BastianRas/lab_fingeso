@@ -1,10 +1,20 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import piuService from '../services/piuService';
+import "leaflet/dist/leaflet.css";
+import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 
 const pius = ref([]);
 const idEditando = ref(null);
 const mostrandoFormulario = ref(false);
+const mapCenter = ref([-33.448890, -70.684650]);
+const mapZoom = ref(16);
+
+// Función para traducir selección del mapa a coordenadas
+const seleccionarUbicacion = (evento) => {
+  datosFormulario.value.latitud = evento.latlng.lat;
+  datosFormulario.value.longitud = evento.latlng.lng;
+};
 
 const datosFormulario = ref({
   codigo: '',
@@ -101,9 +111,21 @@ onMounted(() => {
           <option>Mantenimiento</option>
         </select>
 
-        <div class="form-inputs">
-          <input v-model="datosFormulario.latitud" type="number" step="any" placeholder="Latitud (Ej: -33.4485)" required/>
-          <input v-model="datosFormulario.longitud" type="number" step="any" placeholder="Longitud (Ej: -70.6693)" required/>
+        <div class="mapa-selector">
+          <p style="margin: 0 0 5px 0; font-size: 0.9rem; color: #555;">📍 Haz clic en el mapa para asignar la ubicación:</p>
+          <div style="height: 250px; width: 100%; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; z-index: 1;">
+            
+            <l-map v-model:zoom="mapZoom" v-model:center="mapCenter" :use-global-leaflet="false" @click="seleccionarUbicacion">
+              <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"></l-tile-layer>
+              
+              <l-marker 
+                v-if="datosFormulario.latitud && datosFormulario.longitud" 
+                :lat-lng="[datosFormulario.latitud, datosFormulario.longitud]">
+              </l-marker>
+            </l-map>
+
+          </div>
+          <small style="color: #888;">Coordenadas seleccionadas: {{ datosFormulario.latitud || '---' }}, {{ datosFormulario.longitud || '---' }}</small>
         </div>
 
         <div class="form-buttons">
@@ -165,4 +187,5 @@ th { background-color: #2c3e50; color: white; }
 input, select { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
 .form-buttons { flex-basis: 100%; display: flex; justify-content: flex-end; margin-top: 10px; }
 .form-buttons button { width: auto; min-width: 150px; }
+.mapa-selector {flex-basis: 100%; margin-top: 10px; }
 </style>

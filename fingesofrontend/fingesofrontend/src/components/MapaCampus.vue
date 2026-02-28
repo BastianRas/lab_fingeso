@@ -4,36 +4,37 @@ import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker } from "@vue-leaflet/vue-leaflet";
 
 import piuService from '../services/piuService';
+import lugarService from '../services/lugarService';
 
 // Coordenadas USACH (Centro aproximado: Foro/EAO)
 const zoom = ref(16);
 const center = ref([-33.448890, -70.684650]);
-
-// Base de datos simulada de Salas y Edificios
-const lugares = ref([
-  { id: 1, nombre: "Pabellón Forma (Salas 300-399)", coords: [-33.4495, -70.6850], descripcion: "3er Piso - Escaleras lado norte." },
-  { id: 2, nombre: "Departamento Informática", coords: [-33.4485, -70.6835], descripcion: "Laboratorios y oficinas administrativas." },
-  { id: 3, nombre: "Biblioteca Central", coords: [-33.4478, -70.6820], descripcion: "Entrada principal por Alameda." },
-  { id: 4, nombre: "EAO (Escuela de Artes)", coords: [-33.4498, -70.6860], descripcion: "Auditorios y salas históricas." },
-  { id: 5, nombre: "Casino Central", coords: [-33.4480, -70.6855], descripcion: "Almuerzos Junaeb y cafetería." },
-]);
+const lugares = ref([]);
 
 const pius = ref([]); 
 const busqueda = ref("");
 const lugarSeleccionado = ref(null);
 
-// Simulación de carga de PIUs desde backend
-const cargarPius = async () => {
+// Simulación de carga de PIUs y lugares desde el backend
+const cargarDatosMapa = async () => {
   try {
-    const response = await piuService.obtenerTodos();
-    
-    pius.value = response.data.filter(piu => piu.latitud != null && piu.longitud != null);
-    console.log("PIUs listos para dibujar:", pius.value); 
-    
+    const resPius = await piuService.obtenerTodos();
+    pius.value = resPius.data.filter(piu => piu.latitud != null && piu.longitud != null);
+
+    const resLugares = await lugarService.obtenerTodos();
+    lugares.value = resLugares.data.map(lugar => ({
+      ...lugar,
+      coords: [lugar.latitud, lugar.longitud]
+    }));
+
   } catch (error) {
-    console.error("Error cargando los PIUs:", error);
+    console.error("Error cargando datos del mapa:", error);
   }
 };
+
+onMounted(() => {
+  cargarDatosMapa();
+});
 
 // Función para buscar y centrar el mapa
 const buscarLugar = () => {
@@ -64,7 +65,7 @@ const centrarEn = (coords) => {
 };
 
 onMounted(() => {
-  cargarPius();
+  cargarDatosMapa();
 });
 </script>
 

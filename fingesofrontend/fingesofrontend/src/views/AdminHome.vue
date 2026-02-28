@@ -40,6 +40,18 @@ const cerrarSesion = () => {
         <h3>Usuarios</h3>
         <p>Gestionar cuentas</p>
       </div>
+
+      <div class="card place-card" @click="router.push('/admin/lugares')">
+        <span class="icon">🏢</span>
+        <h3>Gestionar Lugares</h3>
+        <p>Administrar edificios y zonas</p>
+      </div>
+
+      <div class="card map-card" @click="router.push('/mapa')">
+        <span class="icon">🗺️</span>
+        <h3>Ver Mapa Campus</h3>
+        <p>Vista interactiva de PIUs</p>
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +68,8 @@ const cerrarSesion = () => {
 .event-card { border-top: 5px solid #27ae60; } /* Verde Eventos */
 .info-card { border-top: 5px solid #3498db; background-color: #fbfdff; } /* Azul Info */
 .user-card   { border-top: 5px solid #8e44ad; } /* Morado Usuarios */
+.place-card { border-top: 5px solid #f39c12; } /* Naranja Lugares */
+.map-card   { border-top: 5px solid #e67e22; background-color: #fffaf5; } /* Naranja claro Mapa */
 
 .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
 .logout-btn { padding: 0.5rem 1.5rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; }
