@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker, LPolyline } from "@vue-leaflet/vue-leaflet";
+import L from "leaflet";
+import 'leaflet-routing-machine';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
 import piuService from '../services/piuService';
 import lugarService from '../services/lugarService';
@@ -12,8 +15,10 @@ const center = ref([-33.448890, -70.684650]);
 const lugares = ref([]);
 
 const pius = ref([]); 
+const piuSeleccionado = ref(null);
 const busqueda = ref("");
-const lugarSeleccionado = ref(null);
+const rutaCoordenadas = ref([]);
+
 
 // Simulación de carga de PIUs y lugares desde el backend
 const cargarDatosMapa = async () => {
@@ -64,15 +69,51 @@ const centrarEn = (coords) => {
   zoom.value = 18;
 };
 
-onMounted(() => {
-  cargarDatosMapa();
-});
+// Función para probar ruteo peatonal entre dos puntos del campus
+const probarRuta = async () => {
+  rutaCoordenadas.value = [];
+  
+  const origenLng = -70.684650;
+  const origenLat = -33.448890;
+  
+  const destinoLng = -70.683000;
+  const destinoLat = -33.449500;
+
+  try {
+    const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origenLng},${origenLat};${destinoLng},${destinoLat}?overview=full&geometries=geojson`;
+    
+    const respuesta = await fetch(url);
+    const datos = await respuesta.json();
+
+    if (datos.code === "Ok" && datos.routes.length > 0) {
+      rutaCoordenadas.value = datos.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+      
+      center.value = [origenLat, origenLng];
+      zoom.value = 17;
+    } else {
+      alert("No se encontró una ruta peatonal válida entre estos dos puntos.");
+    }
+  } catch (error) {
+    console.error("Error al calcular la ruta:", error);
+    alert("Hubo un error al contactar al servidor de rutas.");
+  }
+};
 </script>
 
 <template>
   <div class="mapa-container">
     <div class="control-panel">
       <h3>📍 Mapa del Campus y PIUs</h3>
+      <div class="origen-selector" style="margin-bottom: 15px;">
+        <label style="font-weight: bold; font-size: 0.9rem;">Punto de Origen:</label>
+        <select v-model="piuSeleccionado" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;">
+          <option :value="null">Selecciona un PIU...</option>
+          <option v-for="piu in pius" :key="'opt-'+piu.id" :value="piu">
+            🖥️ {{ piu.codigo }} ({{ piu.ubicacion }})
+          </option>
+        </select>
+      </div>
+
       <div class="search-box">
         <input 
           v-model="busqueda" 
@@ -81,6 +122,9 @@ onMounted(() => {
         />
         <button @click="buscarLugar">Buscar</button>
       </div>
+        <button @click="probarRuta" style="margin-bottom: 10px; padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer;">
+           Probar Ruteo Peatonal
+        </button>
       
       <div class="quick-list">
         <span v-for="lugar in lugares" :key="'lug-'+lugar.id" @click="centrarEn(lugar.coords)" class="pill">
@@ -96,6 +140,14 @@ onMounted(() => {
           layer-type="base"
           name="OpenStreetMap"
         ></l-tile-layer>
+
+        <l-polyline 
+          v-if="rutaCoordenadas.length > 0" 
+          :lat-lngs="rutaCoordenadas" 
+          color="#3498db" 
+          :weight="6" 
+          :opacity="0.8">
+        </l-polyline>
 
         <l-marker 
           v-for="lugar in lugares" 
