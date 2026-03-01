@@ -70,14 +70,16 @@ const centrarEn = (coords) => {
 };
 
 // Función para probar ruteo peatonal entre dos puntos del campus
-const probarRuta = async () => {
-  rutaCoordenadas.value = [];
-  
-  const origenLng = -70.684650;
-  const origenLat = -33.448890;
-  
-  const destinoLng = -70.683000;
-  const destinoLat = -33.449500;
+const trazarRutaHacia = async (destino) => {
+  if (!piuSeleccionado.value) {
+    alert("Por favor, selecciona un PIU como punto de origen.");
+    return;
+  }
+
+  const origenLng = parseFloat(piuSeleccionado.value.longitud);
+  const origenLat = parseFloat(piuSeleccionado.value.latitud);
+  const destinoLng = parseFloat(destino.coords[1]);
+  const destinoLat = parseFloat(destino.coords[0]);
 
   try {
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origenLng},${origenLat};${destinoLng},${destinoLat}?overview=full&geometries=geojson`;
@@ -88,14 +90,14 @@ const probarRuta = async () => {
     if (datos.code === "Ok" && datos.routes.length > 0) {
       rutaCoordenadas.value = datos.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
       
-      center.value = [origenLat, origenLng];
-      zoom.value = 17;
+      center.value = [(origenLat + destinoLat) / 2, (origenLng + destinoLng) / 2];
+      zoom.value = 16;
     } else {
       alert("No se encontró una ruta peatonal válida entre estos dos puntos.");
     }
   } catch (error) {
     console.error("Error al calcular la ruta:", error);
-    alert("Hubo un error al contactar al servidor de rutas.");
+    alert("Error al contactar al servidor de rutas.");
   }
 };
 </script>
@@ -127,7 +129,7 @@ const probarRuta = async () => {
         </button>
       
       <div class="quick-list">
-        <span v-for="lugar in lugares" :key="'lug-'+lugar.id" @click="centrarEn(lugar.coords)" class="pill">
+        <span v-for="lugar in lugares" :key="'lug-'+lugar.id" @click="trazarRutaHacia(lugar)" class="pill">
           {{ lugar.nombre }}
         </span>
       </div>
