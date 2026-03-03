@@ -12,7 +12,7 @@ import java.util.List;
 @Configuration
 public class DataInitializer {
 
-    // Inyectamos los 3 repositorios: Usuarios, PIUs y Eventos
+    // Inyectamos los repositorios: Usuarios, PIUs, Eventos, Carreras, Clases y Matrícula
     @Bean
     CommandLineRunner initDatabase(UsuarioRepository usuarioRepo, PiuRepository piuRepo, EventoRepository eventoRepo,
                                    CarreraRepository carreraRepo, ClaseRepository claseRepo,
@@ -21,7 +21,7 @@ public class DataInitializer {
 
             // 1. USUARIOS
             crearUsuarioSiNoExiste(usuarioRepo, "Admin", "Sistema", "admin@usach.cl", "00000000", "admin123", Rol.ADMINISTRADOR);
-            crearUsuarioSiNoExiste(usuarioRepo, "Visita", "Estudiante", "visita@usach.cl", "11111111", "visita123", Rol.ALUMNO);
+            crearUsuarioSiNoExiste(usuarioRepo, "Bastian", "Ramos", "visita@usach.cl", "11111111", "visita123", Rol.ALUMNO);
             crearUsuarioSiNoExiste(usuarioRepo, "Juan", "Gestor", "gestor@usach.cl", "22222222", "gestor123", Rol.GESTOR);
             crearUsuarioSiNoExiste(usuarioRepo, "Pedro", "Operador", "operador@usach.cl", "33333333", "operador123", Rol.OPERADOR);
             crearUsuarioSiNoExiste(usuarioRepo, "Laura", "Profesora", "profe@usach.cl", "44444444", "profe123", Rol.PROFESOR);
@@ -46,13 +46,41 @@ public class DataInitializer {
 
             // 4. CARRERAS, CLASES Y MATRÍCULA
             if (carreraRepo.count() == 0) {
-                Carrera ingInfo = new Carrera("Ingeniería en Informática", "Facultad de Ingeniería");
+                // 1. Crear Carrera
+                Carrera ingInfo = new Carrera();
+                ingInfo.setNombre("Ingeniería en Informática");
+                ingInfo.setFacultad("Facultad de Ingeniería");
                 carreraRepo.save(ingInfo);
 
-                Clase fingeso = new Clase("Fundamentos de Ingeniería de Software", "INF-3454", "L2 W2", "D-101", "Laura Profesora", "2026-1", ingInfo);
-                Clase sistemas = new Clase("Sistemas Operativos", "INF-3321", "M3 J3", "D-203", "Laura Profesora", "2026-1", ingInfo);
-                Clase redes = new Clase("Redes de Computadores", "INF-3410", "V1 V2", "E-105", "Laura Profesora", "2026-1", ingInfo);
+                // 2. Crear Clases
+                Clase fingeso = new Clase();
+                fingeso.setNombre("Fundamentos de Ingeniería de Software");
+                fingeso.setCodigo("INF-3454");
+                fingeso.setHorario("L2 W2");
+                fingeso.setSala("D-101");
+                fingeso.setProfesor("Laura Profesora"); // String para el frontend
+                fingeso.setSemestre("2026-1");
+                fingeso.setCarrera(ingInfo);
 
+                Clase sistemas = new Clase();
+                sistemas.setNombre("Sistemas Operativos");
+                sistemas.setCodigo("INF-3321");
+                sistemas.setHorario("M3 J3");
+                sistemas.setSala("D-203");
+                sistemas.setProfesor("Laura Profesora");
+                sistemas.setSemestre("2026-1");
+                sistemas.setCarrera(ingInfo);
+
+                Clase redes = new Clase();
+                redes.setNombre("Redes de Computadores");
+                redes.setCodigo("INF-3410");
+                redes.setHorario("V1 V2");
+                redes.setSala("E-105");
+                redes.setProfesor("Laura Profesora");
+                redes.setSemestre("2026-1");
+                redes.setCarrera(ingInfo);
+
+                // Asignar el Usuario Profesor (Opcional, pero bueno tenerlo en la BD)
                 usuarioRepo.findByCorreo("profe@usach.cl").ifPresent(profe -> {
                     fingeso.setProfesorUsuario(profe);
                     sistemas.setProfesorUsuario(profe);
@@ -61,19 +89,28 @@ public class DataInitializer {
 
                 claseRepo.saveAll(List.of(fingeso, sistemas, redes));
 
+                // 3. Crear Matrícula para el Alumno
                 usuarioRepo.findByCorreo("visita@usach.cl").ifPresent(alumno -> {
-                    if (matriculaRepo.findByAlumnoUsuarioId(alumno.getUsuarioId()).isEmpty()) {
-                        MatriculaAlumno matricula = new MatriculaAlumno(alumno, ingInfo, EstadoMatricula.ACTIVA, List.of(fingeso, sistemas, redes));
+                    if (matriculaRepo.count() == 0) {
+                        MatriculaAlumno matricula = new MatriculaAlumno();
+                        matricula.setAlumno(alumno);
+                        matricula.setCarrera(ingInfo);
+
+                        // ✨ AQUÍ ESTÁ LA LÍNEA CORREGIDA ✨
+                        matricula.setEstadoMatricula(EstadoMatricula.ACTIVA);
+
+                        matricula.setClases(List.of(fingeso, sistemas, redes));
+
                         matriculaRepo.save(matricula);
-                        System.out.println("--> Matrícula del alumno cargada.");
+                        System.out.println("--> Matrícula del alumno cargada exitosamente.");
                     }
                 });
             }
 
-        }; // <--- Cierre del lambda (args -> {})
-    }      // <--- ¡ESTA ES LA LLAVE QUE TE FALTABA! (Cierre del método initDatabase)
+        };
+    }
 
-    // Método auxiliar (ahora sí está fuera del método anterior)
+    // Método auxiliar
     private void crearUsuarioSiNoExiste(UsuarioRepository repository, String nombre, String apellido, String correo, String credencial, String pass, Rol rol) {
         if (repository.findByNumeroCredencial(credencial).isEmpty()) {
             Usuario usuario = new Usuario();
