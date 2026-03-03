@@ -69,7 +69,7 @@ const centrarEn = (coords) => {
   zoom.value = 18;
 };
 
-// Función para probar ruteo peatonal entre dos puntos del campus
+// Función para trazar ruta peatonal usando OpenRouteService
 const trazarRutaHacia = async (destino) => {
   if (!piuSeleccionado.value) {
     alert("Por favor, selecciona un PIU como punto de origen.");
