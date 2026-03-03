@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router'; // ✨ IMPORTAMOS EL ENRUTADOR
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker, LPolyline } from "@vue-leaflet/vue-leaflet";
 import L from "leaflet";
@@ -8,6 +9,8 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
 import piuService from '../services/piuService';
 import lugarService from '../services/lugarService';
+
+const router = useRouter(); // ✨ INICIAMOS EL ENRUTADOR
 
 // Coordenadas USACH (Centro aproximado: Foro/EAO)
 const zoom = ref(16);
@@ -19,6 +22,10 @@ const piuSeleccionado = ref(null);
 const busqueda = ref("");
 const rutaCoordenadas = ref([]);
 
+// ✨ FUNCIÓN PARA VOLVER ATRÁS MAGÍCAMENTE
+const volverAtras = () => {
+  router.back(); 
+};
 
 // Simulación de carga de PIUs y lugares desde el backend
 const cargarDatosMapa = async () => {
@@ -104,8 +111,15 @@ const trazarRutaHacia = async (destino) => {
 
 <template>
   <div class="mapa-container">
-    <div class="control-panel">
+    
+    <div class="header-mapa">
+      <button class="btn-volver" @click="volverAtras">
+        <span class="flecha">⬅️</span> Volver Atrás
+      </button>
       <h3>📍 Mapa del Campus y PIUs</h3>
+    </div>
+
+    <div class="control-panel">
       <div class="origen-selector" style="margin-bottom: 15px;">
         <label style="font-weight: bold; font-size: 0.9rem;">Punto de Origen:</label>
         <select v-model="piuSeleccionado" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;">
@@ -124,9 +138,6 @@ const trazarRutaHacia = async (destino) => {
         />
         <button @click="buscarLugar">Buscar</button>
       </div>
-        <button @click="probarRuta" style="margin-bottom: 10px; padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer;">
-           Probar Ruteo Peatonal
-        </button>
       
       <div class="quick-list">
         <span v-for="lugar in lugares" :key="'lug-'+lugar.id" @click="trazarRutaHacia(lugar)" class="pill">
@@ -190,11 +201,48 @@ const trazarRutaHacia = async (destino) => {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  height: 500px; /* Altura del mapa */
+  height: 600px; /* Aumentado ligeramente para acomodar el nuevo botón */
   background: white;
   border-radius: 12px;
-  padding: 15px;
+  padding: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* ✨ ESTILOS DEL NUEVO ENCABEZADO Y BOTÓN */
+.header-mapa {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 2px solid #f0f2f5;
+  padding-bottom: 15px;
+  margin-bottom: 5px;
+}
+
+.header-mapa h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+}
+
+.btn-volver {
+  background: white;
+  color: #2c3e50;
+  border: 1px solid #ccc;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-volver:hover {
+  background: #f8f9fa;
+  border-color: #3498db;
+  color: #3498db;
+  transform: translateX(-2px); /* Pequeño efecto de moverse a la izquierda */
 }
 
 .control-panel h3 {
@@ -246,11 +294,11 @@ const trazarRutaHacia = async (destino) => {
 }
 
 .map-frame {
-  flex: 1; /* Ocupa el resto del espacio */
+  flex: 1; 
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #ddd;
-  z-index: 1; /* Para que no tape menús */
+  z-index: 1; 
 }
 
 .waze-link {

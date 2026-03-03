@@ -3,17 +3,14 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import CarteleraList from '../components/CarteleraList.vue';
 import matriculaService from '../services/matriculaService';
-import notaService from '../services/notaService'; // <-- IMPORTAMOS EL NUEVO SERVICIO
+import notaService from '../services/notaService';
 
 const router = useRouter();
 const alumnoNombre = ref('');
 const matricula = ref(null);
-const vistaActiva = ref(null);
-
-// --- VARIABLE VACÍA QUE SE LLENARÁ DESDE LA BASE DE DATOS ---
+const vistaActiva = ref('horario'); // Por defecto en horario
 const asignaturasNotas = ref([]);
 
-// --- CERTIFICADOS Y MALLA (Estos se mantienen estáticos) ---
 const tiposCertificados = ref([
   { id: 'regular', nombre: 'Certificado de Alumno Regular', icono: '🎓', descripcion: 'Válido para AFP, Asignación Familiar, Pase Escolar, etc.' },
   { id: 'notas', nombre: 'Certificado de Concentración de Notas', icono: '📊', descripcion: 'Historial académico.' },
@@ -28,7 +25,6 @@ const mallaInformatica = ref([
   { semestre: 4, ramos: [{ codigo: "INF-3321", nombre: "Sistemas Operativos" }, { codigo: "INF-3410", nombre: "Redes de Computadores" }, { codigo: "INF-3454", nombre: "Fundamentos de Ing. de Software" }] }
 ]);
 
-// --- HORARIOS ---
 const diasSemana = [ { id: 'L', nombre: 'Lunes' }, { id: 'M', nombre: 'Martes' }, { id: 'W', nombre: 'Miércoles' }, { id: 'J', nombre: 'Jueves' }, { id: 'V', nombre: 'Viernes' } ];
 const bloquesHorarios = [ { id: 1, hora: "08:15 - 09:35" }, { id: 2, hora: "09:50 - 11:10" }, { id: 3, hora: "11:25 - 12:45" }, { id: 4, hora: "13:45 - 15:05" }, { id: 5, hora: "15:20 - 16:40" }, { id: 6, hora: "16:55 - 18:15" }, { id: 7, hora: "18:45 - 20:05" }, { id: 8, hora: "20:05 - 21:25" }, { id: 9, hora: "21:25 - 22:45" } ];
 
@@ -55,21 +51,43 @@ const horarioGenerado = computed(() => {
 const irAlMapa = () => router.push('/mapa');
 const mostrar = (vista) => vistaActiva.value = vistaActiva.value === vista ? null : vista;
 const descargarCertificado = (nombre) => alert(`Generando y descargando: ${nombre}...`);
+const cerrarSesion = () => { localStorage.removeItem('user'); router.push('/'); };
 
 onMounted(async () => {
   const user = JSON.parse(localStorage.getItem('user'));
   if (user) {
     alumnoNombre.value = user.nombre;
     try {
-      // 1. Cargar Matrícula
-      matricula.value = await matriculaService.obtenerMatricula(user.usuarioId);
       
-      // 2. Cargar Notas Reales desde Base de Datos
+      // ✨ MAGIA: Leer la matrícula que el administrador asignó
+      const matriculasAdmin = JSON.parse(localStorage.getItem('matriculas_admin') || '{}');
+      const miMatriculaAsignada = matriculasAdmin[user.numeroCredencial];
+
+      if (miMatriculaAsignada) {
+        // Si el admin le asignó datos, los usamos
+        matricula.value = {
+          carrera: { nombre: miMatriculaAsignada.carreraNombre, facultad: "Facultad de Ingeniería" },
+          estadoMatricula: miMatriculaAsignada.estado,
+          clases: miMatriculaAsignada.cursos
+        };
+      } else {
+        // Si no hay asignación manual, buscamos la de la Base de Datos original
+        matricula.value = await matriculaService.obtenerMatricula(user.usuarioId);
+      }
+
+      // CARGAR NOTAS (Mejorado para que se vean los cursos incluso si no tienen notas)
       const resNotas = await notaService.obtenerPorAlumno(user.usuarioId);
       const notasPlanas = resNotas.data;
-
-      // 3. Agrupar las notas por nombre de la asignatura
       const agrupadas = {};
+
+      // 1. Mostrar todos los cursos asignados, aunque no tengan notas aún
+      if (matricula.value && matricula.value.clases) {
+        matricula.value.clases.forEach(c => {
+          agrupadas[c.nombre] = { nombre: c.nombre, evaluaciones: [] };
+        });
+      }
+
+      // 2. Llenar con las notas reales si existen en la BD
       notasPlanas.forEach(nota => {
         const claseNombre = nota.clase.nombre;
         if (!agrupadas[claseNombre]) {
@@ -81,7 +99,7 @@ onMounted(async () => {
           ponderacion: nota.ponderacion
         });
       });
-      // Convertimos el objeto en un Array para que Vue lo dibuje
+      
       asignaturasNotas.value = Object.values(agrupadas);
 
     } catch (error) {
@@ -98,35 +116,26 @@ onMounted(async () => {
         <h2>Hola, {{ alumnoNombre }} ✌️</h2>
         <p>Estudiante Regular</p>
       </div>
-      <div class="avatar" style="background-color: #3498db;">🎓</div>
+      <div class="header-actions">
+        <button class="btn-logout" @click="cerrarSesion">Cerrar Sesión</button>
+        <div class="avatar" style="background-color: #3498db;">🎓</div>
+      </div>
     </header>
 
     <section class="quick-actions">
       <h3>Mis Accesos</h3>
       <div class="grid-buttons">
-        <button class="action-btn" @click="irAlMapa">
-          <span class="icon">🗺️</span> <span class="text">Ver Campus</span>
-        </button>
-        <button class="action-btn" :class="{ active: vistaActiva === 'horario' }" @click="mostrar('horario')">
-          <span class="icon">📅</span> <span class="text">Mi Horario</span>
-        </button>
-        <button class="action-btn" :class="{ active: vistaActiva === 'malla' }" @click="mostrar('malla')">
-          <span class="icon">📚</span> <span class="text">Malla Curricular</span>
-        </button>
-        <button class="action-btn" :class="{ active: vistaActiva === 'notas' }" @click="mostrar('notas')">
-          <span class="icon">📊</span> <span class="text">Mis Notas</span>
-        </button>
-        <button class="action-btn" :class="{ active: vistaActiva === 'certificados' }" @click="mostrar('certificados')">
-          <span class="icon">📄</span> <span class="text">Certificados</span>
-        </button>
-        <button class="action-btn" :class="{ active: vistaActiva === 'estado' }" @click="mostrar('estado')">
-          <span class="icon">🎓</span> <span class="text">Estado Matrícula</span>
-        </button>
+        <button class="action-btn" @click="irAlMapa"><span class="icon">🗺️</span> <span class="text">Ver Campus</span></button>
+        <button class="action-btn" :class="{ active: vistaActiva === 'horario' }" @click="mostrar('horario')"><span class="icon">📅</span> <span class="text">Mi Horario</span></button>
+        <button class="action-btn" :class="{ active: vistaActiva === 'malla' }" @click="mostrar('malla')"><span class="icon">📚</span> <span class="text">Malla Curricular</span></button>
+        <button class="action-btn" :class="{ active: vistaActiva === 'notas' }" @click="mostrar('notas')"><span class="icon">📊</span> <span class="text">Mis Notas</span></button>
+        <button class="action-btn" :class="{ active: vistaActiva === 'certificados' }" @click="mostrar('certificados')"><span class="icon">📄</span> <span class="text">Certificados</span></button>
+        <button class="action-btn" :class="{ active: vistaActiva === 'estado' }" @click="mostrar('estado')"><span class="icon">🎓</span> <span class="text">Estado Matrícula</span></button>
       </div>
 
       <div v-if="vistaActiva === 'horario'" class="info-panel panel-animado">
         <h4>📅 Mi Horario</h4>
-        <p class="facultad">Semestre Actual — {{ matricula?.carrera?.nombre || 'Carrera' }}</p>
+        <p class="facultad">Semestre Actual — {{ matricula?.carrera?.nombre || 'Sin Carrera Asignada' }}</p>
         <div class="tabla-horario-wrapper">
           <table class="tabla-horario">
             <thead>
@@ -168,7 +177,7 @@ onMounted(async () => {
           </div>
         </div>
         <div v-else>
-           <p class="sin-datos">Malla curricular no disponible para tu carrera actual.</p>
+           <p class="sin-datos">Malla curricular no disponible en el sistema para tu carrera actual.</p>
         </div>
       </div>
 
@@ -193,7 +202,8 @@ onMounted(async () => {
         <div v-if="asignaturasNotas.length > 0" class="notas-container">
           <div v-for="(asignatura, index) in asignaturasNotas" :key="index" class="asignatura-card">
             <h5 class="asignatura-titulo">{{ asignatura.nombre }}</h5>
-            <div class="tabla-responsive">
+            
+            <div v-if="asignatura.evaluaciones.length > 0" class="tabla-responsive">
                 <table class="notas-tabla">
                 <thead>
                     <tr><th>Evaluación</th><th>Ponderación</th><th>Nota Obtenida</th><th>Puntaje Ponderado</th></tr>
@@ -216,9 +226,10 @@ onMounted(async () => {
                 </tfoot>
                 </table>
             </div>
+            <p v-else class="text-muted" style="margin-top: 10px;">Aún no hay notas registradas por el profesor en este ramo.</p>
           </div>
         </div>
-        <p v-else class="sin-datos">Aún no tienes notas registradas en el sistema.</p>
+        <p v-else class="sin-datos">Aún no tienes notas registradas ni cursos asignados en el sistema.</p>
       </div>
 
       <div v-if="vistaActiva === 'certificados'" class="info-panel panel-animado">
@@ -239,14 +250,16 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Estilos Base y Animaciones */
+/* TUS ESTILOS EXACTOS MANTENIDOS AL 100% */
 .dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: sans-serif; }
 .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .welcome-text h2 { margin: 0; color: #2c3e50; }
 .welcome-text p { margin: 0; color: #7f8c8d; }
+.header-actions { display: flex; align-items: center; gap: 15px; }
+.btn-logout { background: transparent; color: #c0392b; border: 1px solid #c0392b; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.btn-logout:hover { background: #c0392b; color: white; }
 .avatar { color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-/* Botones Accesos Rápidos */
 .quick-actions h3 { color: #2c3e50; margin-bottom: 15px; }
 .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .action-btn { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
@@ -255,7 +268,6 @@ onMounted(async () => {
 .icon { font-size: 1.8rem; }
 .text { font-size: 0.85rem; font-weight: 500; text-align: center; color: #333; }
 
-/* Panel de Información General */
 .info-panel { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid #3498db; }
 .panel-animado { animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -263,7 +275,6 @@ onMounted(async () => {
 .facultad { color: #7f8c8d; font-size: 0.95rem; margin-bottom: 20px; }
 .sin-datos { color: #999; font-style: italic; }
 
-/* Horario Grid */
 .tabla-horario-wrapper { overflow-x: auto; border: 1px solid #e0e6ed; border-radius: 8px; }
 .tabla-horario { width: 100%; border-collapse: collapse; background: white; min-width: 600px; }
 .tabla-horario th, .tabla-horario td { border: 1px solid #e0e6ed; padding: 10px; text-align: center; }
@@ -277,7 +288,6 @@ onMounted(async () => {
 .clase-sala { font-size: 0.75rem; color: #555; margin-top: 4px; }
 .fila-descanso td { background-color: #fcfcfc; color: #7f8c8d; font-style: italic; font-size: 0.85rem; padding: 8px; letter-spacing: 1px; }
 
-/* Malla Curricular Grid */
 .malla-grid { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; }
 .semestre-columna { min-width: 250px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e6ed; display: flex; flex-direction: column; }
 .semestre-header { background: #2c3e50; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px 8px 0 0; }
@@ -287,7 +297,6 @@ onMounted(async () => {
 .ramo-codigo { font-size: 0.75rem; font-family: monospace; color: #7f8c8d; }
 .ramo-nombre { font-size: 0.95rem; font-weight: bold; color: #2c3e50; line-height: 1.2; }
 
-/* Estado Matrícula */
 .estado-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
 .estado-item { background: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #eee; }
 .estado-item .label { display: block; font-size: 0.85rem; color: #7f8c8d; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -295,7 +304,6 @@ onMounted(async () => {
 .badge-estado { padding: 4px 12px; border-radius: 15px; font-size: 0.85rem; display: inline-block; }
 .badge-estado.activa { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-/* Notas y Evaluaciones */
 .notas-container { display: flex; flex-direction: column; gap: 20px; }
 .asignatura-card { border: 1px solid #e0e6ed; border-radius: 8px; padding: 20px; background: #fafbfc; }
 .asignatura-titulo { margin: 0 0 15px 0; color: #3498db; font-size: 1.15rem; border-bottom: 2px solid #3498db; padding-bottom: 8px; display: inline-block; }
@@ -306,8 +314,8 @@ onMounted(async () => {
 .nota-destacada { font-weight: bold; color: #ea7600; font-size: 1.05rem; }
 .text-right { text-align: right; }
 .promedio-final { font-weight: bold; color: #27ae60; font-size: 1.1rem; }
+.text-muted { color: #7f8c8d; font-style: italic; font-size: 0.9rem; }
 
-/* Certificados */
 .certificados-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
 .certificado-card { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid #e0e6ed; border-radius: 10px; background: white; transition: all 0.2s ease; }
 .certificado-card:hover { border-color: #3498db; box-shadow: 0 6px 15px rgba(52,152,219,0.1); transform: translateY(-3px); }
