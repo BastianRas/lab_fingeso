@@ -59,37 +59,43 @@ onMounted(async () => {
     alumnoNombre.value = user.nombre;
     try {
       
-      // ✨ MAGIA: Leer la matrícula que el administrador asignó
       const matriculasAdmin = JSON.parse(localStorage.getItem('matriculas_admin') || '{}');
       const miMatriculaAsignada = matriculasAdmin[user.numeroCredencial];
 
       if (miMatriculaAsignada) {
-        // Si el admin le asignó datos, los usamos
         matricula.value = {
           carrera: { nombre: miMatriculaAsignada.carreraNombre, facultad: "Facultad de Ingeniería" },
           estadoMatricula: miMatriculaAsignada.estado,
           clases: miMatriculaAsignada.cursos
         };
       } else {
-        // Si no hay asignación manual, buscamos la de la Base de Datos original
         matricula.value = await matriculaService.obtenerMatricula(user.usuarioId);
       }
 
-      // CARGAR NOTAS (Mejorado para que se vean los cursos incluso si no tienen notas)
-      const resNotas = await notaService.obtenerPorAlumno(user.usuarioId);
-      const notasPlanas = resNotas.data;
+      // ✨ SECCIÓN DE NOTAS MEJORADA (Junta Backend + Memoria Local)
+      let notasBackend = [];
+      try {
+        const resNotas = await notaService.obtenerPorAlumno(user.usuarioId);
+        notasBackend = resNotas.data || [];
+      } catch(e) { console.warn("Cargando notas de memoria local..."); }
+
+      // Extraer notas asignadas por el profesor en modo mock
+      const notasMockGlobal = JSON.parse(localStorage.getItem('notas_mock') || '[]');
+      const misNotasMock = notasMockGlobal.filter(n => n.alumno && n.alumno.usuarioId === user.usuarioId);
+
+      // Unificar ambas fuentes
+      const todasMisNotas = [...notasBackend, ...misNotasMock];
+
       const agrupadas = {};
 
-      // 1. Mostrar todos los cursos asignados, aunque no tengan notas aún
       if (matricula.value && matricula.value.clases) {
         matricula.value.clases.forEach(c => {
           agrupadas[c.nombre] = { nombre: c.nombre, evaluaciones: [] };
         });
       }
 
-      // 2. Llenar con las notas reales si existen en la BD
-      notasPlanas.forEach(nota => {
-        const claseNombre = nota.clase.nombre;
+      todasMisNotas.forEach(nota => {
+        const claseNombre = nota.clase.nombre || 'Asignatura Desconocida';
         if (!agrupadas[claseNombre]) {
           agrupadas[claseNombre] = { nombre: claseNombre, evaluaciones: [] };
         }
@@ -250,7 +256,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* TUS ESTILOS EXACTOS MANTENIDOS AL 100% */
 .dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: sans-serif; }
 .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .welcome-text h2 { margin: 0; color: #2c3e50; }
@@ -263,8 +268,7 @@ onMounted(async () => {
 .quick-actions h3 { color: #2c3e50; margin-bottom: 15px; }
 .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .action-btn { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
-.action-btn:hover { background-color: #e3f2fd; border-color: #3498db; }
-.action-btn.active { background-color: #e3f2fd; border-color: #3498db; font-weight: bold; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(52,152,219,0.2); }
+.action-btn:hover, .action-btn.active { background-color: #e3f2fd; border-color: #3498db; font-weight: bold; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(52,152,219,0.2); }
 .icon { font-size: 1.8rem; }
 .text { font-size: 0.85rem; font-weight: 500; text-align: center; color: #333; }
 
