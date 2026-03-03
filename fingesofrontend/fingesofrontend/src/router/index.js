@@ -12,6 +12,7 @@ import AdminPius from '../views/AdminPius.vue'
 import AdminEventos from '../views/AdminEventos.vue'
 import AdminUsuarios from '../views/AdminUsuarios.vue'
 import AdminLugares from '../views/AdminLugares.vue'
+import AdminSalas from '../views/AdminSalas.vue' // ✨ NUEVO IMPORT AGREGADO
 import GestorHome from '../views/GestorHome.vue'
 import OperadorHome from '../views/OperadorHome.vue'
 
@@ -37,6 +38,7 @@ const routes = [
   { path: '/admin/pius', name: 'admin-pius', component: AdminPius },
   { path: '/admin/eventos', name: 'admin-eventos', component: AdminEventos },
   { path: '/admin/usuarios', name: 'admin-usuarios', component: AdminUsuarios },
+  { path: '/admin/salas', name: 'admin-salas', component: AdminSalas }, // ✨ NUEVA RUTA AGREGADA
   { path: '/admin/lugares', name: 'admin-lugares', component: AdminLugares },
   { path: '/gestor', name: 'gestor', component: GestorHome },
   { path: '/operador', name: 'operador', component: OperadorHome },

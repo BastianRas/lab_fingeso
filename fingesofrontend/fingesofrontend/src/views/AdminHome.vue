@@ -41,6 +41,12 @@ const cerrarSesion = () => {
         <p>Gestionar cuentas</p>
       </div>
 
+      <div class="card room-card" @click="router.push('/admin/salas')">
+        <span class="icon">🏫</span>
+        <h3>Gestionar Salas y Horarios</h3>
+        <p>Asignar infraestructura a ramos</p>
+      </div>
+
       <div class="card place-card" @click="router.push('/admin/lugares')">
         <span class="icon">🏢</span>
         <h3>Gestionar Lugares</h3>
@@ -52,6 +58,7 @@ const cerrarSesion = () => {
         <h3>Ver Mapa Campus</h3>
         <p>Vista interactiva de PIUs</p>
       </div>
+      
     </div>
   </div>
 </template>
@@ -62,15 +69,17 @@ const cerrarSesion = () => {
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto; }
 
 .card { background: white; padding: 2rem; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.card:hover { transform: translateY(-5px); }
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
 
-.action-card { border-top: 5px solid #c0392b; } /* Rojo PIUs */
-.event-card { border-top: 5px solid #27ae60; } /* Verde Eventos */
-.info-card { border-top: 5px solid #3498db; background-color: #fbfdff; } /* Azul Info */
-.user-card   { border-top: 5px solid #8e44ad; } /* Morado Usuarios */
-.place-card { border-top: 5px solid #f39c12; } /* Naranja Lugares */
-.map-card   { border-top: 5px solid #e67e22; background-color: #fffaf5; } /* Naranja claro Mapa */
+.action-card { border-top: 5px solid #c0392b; }
+.event-card  { border-top: 5px solid #27ae60; }
+.info-card   { border-top: 5px solid #3498db; background-color: #fbfdff; }
+.user-card   { border-top: 5px solid #8e44ad; }
+.room-card   { border-top: 5px solid #16a085; } /* Turquesa para salas */
+.place-card  { border-top: 5px solid #f39c12; }
+.map-card    { border-top: 5px solid #e67e22; background-color: #fffaf5; }
 
 .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
-.logout-btn { padding: 0.5rem 1.5rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.logout-btn { padding: 0.5rem 1.5rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.logout-btn:hover { background: #e74c3c; }
 </style>

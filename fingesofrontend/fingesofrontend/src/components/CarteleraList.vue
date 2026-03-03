@@ -1,43 +1,47 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import eventoService from '../services/eventoService';
 
-// Datos simulados (Mock) de noticias USACH
-const noticias = ref([
-  {
-    id: 1,
-    titulo: "Suspensión de actividades por Feriado",
-    fecha: "15 Ago 2024",
-    resumen: "Se informa a la comunidad universitaria que este viernes no habrá actividades académicas ni administrativas.",
-    categoria: "Institucional"
-  },
-  {
-    id: 2,
-    titulo: "Nuevos horarios de Biblioteca Central",
-    fecha: "14 Ago 2024",
-    resumen: "La biblioteca extenderá su horario de atención hasta las 21:00 hrs durante periodo de exámenes.",
-    categoria: "Servicios"
-  },
-  {
-    id: 3,
-    titulo: "Charla de Inteligencia Artificial",
-    fecha: "12 Ago 2024",
-    resumen: "El departamento de informática invita a la charla magistral sobre IA Generativa en el Aula Magna.",
-    categoria: "Académico"
+// Variable vacía que se llenará con los datos de la base de datos
+const noticias = ref([]);
+const cargando = ref(true);
+
+onMounted(async () => {
+  try {
+    // Llamamos al backend para traer los eventos creados por el administrador
+    const respuesta = await eventoService.obtenerTodos();
+    
+    // Invertimos el arreglo para que los eventos más nuevos (los últimos creados) salgan arriba
+    noticias.value = respuesta.data.reverse();
+  } catch (error) {
+    console.error("Error al cargar la cartelera:", error);
+  } finally {
+    cargando.value = false;
   }
-]);
+});
 </script>
 
 <template>
   <div class="cartelera-container">
+    
+    <div v-if="cargando" class="mensaje-estado">
+      ⏳ Cargando cartelera...
+    </div>
+
+    <div v-else-if="noticias.length === 0" class="mensaje-estado">
+      📭 No hay noticias publicadas en este momento.
+    </div>
+
     <div v-for="noticia in noticias" :key="noticia.id" class="noticia-card">
       <div class="noticia-header">
-        <span class="categoria-badge">{{ noticia.categoria }}</span>
+        <span class="categoria-badge">{{ noticia.tipo }}</span>
         <span class="fecha">{{ noticia.fecha }}</span>
       </div>
       <h4>{{ noticia.titulo }}</h4>
-      <p>{{ noticia.resumen }}</p>
+      <p>{{ noticia.descripcion }}</p>
       <button class="leer-mas">Leer más</button>
     </div>
+    
   </div>
 </template>
 
@@ -46,6 +50,16 @@ const noticias = ref([
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+.mensaje-estado {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  background: white;
+  border-radius: 12px;
+  border: 1px dashed #ccc;
+  font-style: italic;
 }
 
 .noticia-card {
