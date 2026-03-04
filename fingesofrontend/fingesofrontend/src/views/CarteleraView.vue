@@ -31,7 +31,7 @@ onMounted(async () => {
         <h1>📢 Cartelera USACH</h1>
         <p>Noticias, Avisos y Eventos Oficiales</p>
       </div>
-      <button class="back-btn" @click="router.push('/home')">⬅ Volver</button>
+      <button class="back-btn" @click="router.push('/admin')">⬅ Volver</button>
     </header>
 
     <div class="content">
