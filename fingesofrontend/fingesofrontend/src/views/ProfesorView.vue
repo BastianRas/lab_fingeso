@@ -65,6 +65,7 @@ const formNota = ref({ claseId: '', alumnoId: '', nombreEvaluacion: '', valor: '
 const enviando = ref(false);
 const mensaje = ref({ texto: '', tipo: '' });
 const idEditando = ref(null);
+const claseIdRealBD = ref(null); // ✨ NUEVO: Variable para sincronizar el ID falso con el real de la BD
 const notasRegistradas = ref([]);
 
 const mostrar = (vista) => vistaActiva.value = vistaActiva.value === vista ? null : vista;
@@ -107,21 +108,39 @@ onMounted(async () => {
 
 const primerCurso = () => clases.value.length > 0 ? clases.value[0] : null;
 
+// ✨ MODIFICADO: Ahora busca las notas del DataInitializer usando el nombre de la clase
 const cargarNotasDeClase = async () => {
   if (formNota.value.claseId) {
     let notasBD = [];
     try {
-      const res = await notaService.obtenerPorClase(formNota.value.claseId);
-      notasBD = res.data;
-    } catch (e) { console.warn("Cargando notas desde memoria local..."); }
+      const claseSeleccionada = clases.value.find(c => c.id === formNota.value.claseId);
+
+      if (claseSeleccionada) {
+         for (const alumno of alumnosParaEvaluar.value) {
+            try {
+               const resAlum = await notaService.obtenerPorAlumno(alumno.usuarioId);
+               if (resAlum.data) {
+                  const notasFiltradas = resAlum.data.filter(n => n.clase.nombre === claseSeleccionada.nombre);
+                  // Guardamos el ID real de la BD para poder editar sin errores
+                  notasFiltradas.forEach(n => n.claseIdReal = n.clase.id);
+                  notasBD.push(...notasFiltradas);
+               }
+            } catch(e) {}
+         }
+      }
+    } catch (e) { console.warn("Error buscando notas", e); }
 
     const notasMockGlobal = JSON.parse(localStorage.getItem('notas_mock') || '[]');
-    const notasMockDeClase = notasMockGlobal.filter(n => n.clase.id === formNota.value.claseId);
+    const notasMockDeClase = notasMockGlobal.filter(n => n.clase.id === formNota.value.claseId || n.clase.nombre === clases.value.find(c => c.id === formNota.value.claseId)?.nombre);
 
-    notasRegistradas.value = [...notasBD, ...notasMockDeClase];
+    const todas = [...notasBD, ...notasMockDeClase];
+    const unicas = Array.from(new Set(todas.map(a => a.id))).map(id => todas.find(a => a.id === id));
+    
+    notasRegistradas.value = unicas;
   }
 };
 
+// ✨ MODIFICADO: Envía el ID correcto a la BD
 const enviarNota = async () => {
   mensaje.value = { texto: '', tipo: '' };
   if (!formNota.value.claseId || !formNota.value.alumnoId || !formNota.value.nombreEvaluacion || !formNota.value.valor || !formNota.value.ponderacion) {
@@ -135,36 +154,28 @@ const enviarNota = async () => {
     valor: parseFloat(formNota.value.valor),
     ponderacion: parseInt(formNota.value.ponderacion),
     alumno: { usuarioId: formNota.value.alumnoId },
-    clase: { id: formNota.value.claseId }
+    // Usa el ID real si existe (notas pre-cargadas), si no, usa el mock ID
+    clase: { id: (idEditando.value && claseIdRealBD.value) ? claseIdRealBD.value : formNota.value.claseId }
   };
 
   try {
     if (idEditando.value && !String(idEditando.value).startsWith('mock-')) {
       await notaService.actualizarNota(idEditando.value, notaBD);
+      mensaje.value = { texto: '✅ ¡Nota actualizada exitosamente en la base de datos!', tipo: 'exito' };
     } else if (!idEditando.value) {
       await notaService.crearNota(notaBD);
+      mensaje.value = { texto: '✅ ¡Nota subida exitosamente al sistema!', tipo: 'exito' };
     }
-    mensaje.value = { texto: '✅ ¡Nota subida exitosamente al sistema!', tipo: 'exito' };
   } catch (error) {
     const notasMock = JSON.parse(localStorage.getItem('notas_mock') || '[]');
-    
-    // ✨ SE AGREGA EL NOMBRE DE LA CLASE Y LOS DATOS DEL ALUMNO PARA QUE EL ESTUDIANTE LO LEA
     const alumnoObj = alumnosInscritos.value.find(a => a.usuarioId === formNota.value.alumnoId) || { usuarioId: formNota.value.alumnoId, nombre: 'Estudiante', apellido: '' };
     const claseObj = clases.value.find(c => c.id === formNota.value.claseId) || { id: formNota.value.claseId, nombre: 'Asignatura Asignada' };
 
     if (idEditando.value && String(idEditando.value).startsWith('mock-')) {
        const index = notasMock.findIndex(n => n.id === idEditando.value);
-       if(index !== -1) notasMock[index] = { 
-         ...notasMock[index], ...notaBD, 
-         alumno: alumnoObj, clase: claseObj 
-       };
+       if(index !== -1) notasMock[index] = { ...notasMock[index], ...notaBD, alumno: alumnoObj, clase: claseObj };
     } else {
-       notasMock.push({
-         id: 'mock-' + Date.now(),
-         ...notaBD,
-         alumno: alumnoObj,
-         clase: claseObj
-       });
+       notasMock.push({ id: 'mock-' + Date.now(), ...notaBD, alumno: alumnoObj, clase: claseObj });
     }
     localStorage.setItem('notas_mock', JSON.stringify(notasMock));
     mensaje.value = { texto: '✅ ¡Nota guardada exitosamente en el registro académico!', tipo: 'exito' };
@@ -175,17 +186,25 @@ const enviarNota = async () => {
   }
 };
 
+// ✨ MODIFICADO: Captura el ID real de la base de datos al presionar Editar
 const editarNota = (nota) => {
   idEditando.value = nota.id;
   formNota.value.alumnoId = nota.alumno.usuarioId;
   formNota.value.nombreEvaluacion = nota.nombreEvaluacion;
   formNota.value.valor = nota.valor;
   formNota.value.ponderacion = nota.ponderacion;
+  claseIdRealBD.value = nota.claseIdReal || nota.clase.id; 
   mensaje.value = { texto: '✏️ Modo edición activado. Modifica los datos arriba.', tipo: 'exito' };
 };
 
+// ✨ MODIFICADO: Limpia la variable oculta
 const cancelarEdicion = () => {
-  idEditando.value = null; formNota.value.nombreEvaluacion = ''; formNota.value.valor = ''; formNota.value.ponderacion = ''; mensaje.value = { texto: '', tipo: '' };
+  idEditando.value = null; 
+  claseIdRealBD.value = null;
+  formNota.value.nombreEvaluacion = ''; 
+  formNota.value.valor = ''; 
+  formNota.value.ponderacion = ''; 
+  mensaje.value = { texto: '', tipo: '' };
 };
 
 const eliminarNota = async (id) => {
@@ -195,7 +214,7 @@ const eliminarNota = async (id) => {
        notasMock = notasMock.filter(n => n.id !== id);
        localStorage.setItem('notas_mock', JSON.stringify(notasMock));
     } else {
-       try { await notaService.eliminarNota(id); } catch (e) { alert("Error al eliminar la nota."); }
+       try { await notaService.eliminarNota(id); } catch (e) { alert("Error al eliminar la nota de la BD."); }
     }
     await cargarNotasDeClase();
     mensaje.value = { texto: '🗑️ Nota eliminada exitosamente.', tipo: 'exito' };
@@ -405,17 +424,17 @@ const eliminarNota = async (id) => {
 .btn-group-urgent { display: flex; gap: 10px; margin-top: 15px; }
 .primary-btn { flex: 1; background-color: #e67e22; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 .primary-btn:hover { background: #d35400; }
-.map-btn { background-color: #34495e; }
-.map-btn:hover { background-color: #2c3e50; }
+.map-btn { background: #34495e; }
+.map-btn:hover { background: #2c3e50; }
 
 .quick-actions { margin-bottom: 25px; }
 .grid-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 .action-btn { flex: 1; min-width: 100px; background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; }
-.action-btn:hover, .action-btn.active { background-color: #fdf2e9; border-color: #e67e22; font-weight: bold; }
+.action-btn:hover, .action-btn.active { background-color: #fdf2e9; border-color: #e67e22; font-weight: bold; box-shadow: 0 4px 8px rgba(230, 126, 34, 0.2); }
 .icon { font-size: 1.5rem; }
 .text { font-size: 0.85rem; font-weight: 500; }
 
-.info-panel { background: white; border-radius: 12px; padding: 25px; border-top: 5px solid #e67e22; margin-bottom: 20px; }
+.info-panel { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid #e67e22; }
 .animacion-panel { animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 h4 { margin: 0 0 15px; color: #2c3e50; font-size: 1.2rem; }
