@@ -12,7 +12,6 @@ import java.util.List;
 @Configuration
 public class DataInitializer {
 
-    // FÍJATE AQUÍ: Agregamos NotaRepository
     @Bean
     CommandLineRunner initDatabase(UsuarioRepository usuarioRepo, PiuRepository piuRepo, EventoRepository eventoRepo,
                                    CarreraRepository carreraRepo, ClaseRepository claseRepo,
@@ -94,7 +93,8 @@ public class DataInitializer {
     }
 
     private void crearUsuarioSiNoExiste(UsuarioRepository repository, String nombre, String apellido, String correo, String credencial, String pass, Rol rol) {
-        if (repository.findByNumeroCredencial(credencial).isEmpty()) {
+        // ✨ CORRECCIÓN: Verificamos por correo para evitar el error de llave duplicada
+        if (repository.findByCorreo(correo).isEmpty()) {
             Usuario usuario = new Usuario();
             usuario.setNombre(nombre);
             usuario.setApellido(apellido);
