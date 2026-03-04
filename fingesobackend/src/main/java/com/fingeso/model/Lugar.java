@@ -17,6 +17,13 @@ public class Lugar {
 
     public Lugar(){}
 
+    public Lugar(String nombre, String descripcion, Double latitud, Double longitud) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.latitud = latitud;
+        this.longitud = longitud;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

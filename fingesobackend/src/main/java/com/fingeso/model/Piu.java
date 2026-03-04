@@ -25,10 +25,12 @@ public class Piu {
     // Constructores, Getters y Setters
     public Piu() {}
 
-    public Piu(String codigo, String ubicacion, String estado) {
+    public Piu(String codigo, String ubicacion, String estado, Double latitud, Double longitud) {
         this.codigo = codigo;
         this.ubicacion = ubicacion;
         this.estado = estado;
+        this.latitud = latitud;
+        this.longitud = longitud;
     }
 
     public Long getId() { return id; }
