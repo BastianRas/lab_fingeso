@@ -2,12 +2,22 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import piuService from '../services/piuService';
+// Nuevas importaciones para el mapa
+import "leaflet/dist/leaflet.css";
+import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 
 const router = useRouter();
 const operadorNombre = ref('');
 const pius = ref([]);
 const cargando = ref(true);
 const vistaActiva = ref('vigilancia'); // 'vigilancia' | 'reubicacion' | 'reportes'
+
+// Variables para el mapa de reubicación
+const piuEnReubicacion = ref(null);
+const mapCenter = ref([-33.448890, -70.684650]);
+const mapZoom = ref(16);
+const nuevaUbicacionNombre = ref('');
+const nuevasCoordenadas = ref({ lat: null, lng: null });
 
 // Filtros para la vista
 const filtroBusqueda = ref('');
@@ -48,8 +58,6 @@ const cerrarSesion = () => {
 
 const irAlMapa = () => router.push('/mapa');
 
-// --- FUNCIONES ESPECÍFICAS DEL OPERADOR (Según Informe 2) ---
-
 // CU-008: Reportar falla de PIU
 const reportarFalla = async (piu) => {
   const motivo = prompt(`¿Cuál es el problema reportado para el equipo ${piu.codigo}? (Ej: Pantalla rota, Sin conexión)`);
@@ -65,19 +73,50 @@ const reportarFalla = async (piu) => {
   }
 };
 
-// RF-021: Instalación/reubicación de PIUs
-const reubicarPiu = async (piu) => {
-  const nuevaUbicacion = prompt(`Ingrese la nueva ubicación física para el equipo ${piu.codigo}:`, piu.ubicacion);
-  if (nuevaUbicacion && nuevaUbicacion !== piu.ubicacion) {
-    try {
-      const piuActualizado = { ...piu, ubicacion: nuevaUbicacion };
-      await piuService.actualizar(piu.id, piuActualizado);
-      alert(`📍 Equipo ${piu.codigo} reubicado exitosamente a: ${nuevaUbicacion}`);
-      await cargarDatos();
-    } catch (error) {
-      alert("Error al registrar la reubicación.");
-    }
+// --- NUEVA LÓGICA DE REUBICACIÓN CON MAPA ---
+
+const prepararReubicacion = (piu) => {
+  piuEnReubicacion.value = piu;
+  nuevaUbicacionNombre.value = piu.ubicacion;
+  nuevasCoordenadas.value = { lat: piu.latitud || null, lng: piu.longitud || null };
+  
+  // Si el PIU ya tenía coordenadas, centramos el mapa ahí
+  if (piu.latitud && piu.longitud) {
+    mapCenter.value = [piu.latitud, piu.longitud];
+  } else {
+    mapCenter.value = [-33.448890, -70.684650]; // Centro por defecto Usach
   }
+};
+
+const seleccionarNuevaUbicacion = (evento) => {
+  nuevasCoordenadas.value.lat = evento.latlng.lat;
+  nuevasCoordenadas.value.lng = evento.latlng.lng;
+};
+
+const confirmarReubicacion = async () => {
+  if (!nuevaUbicacionNombre.value) {
+    alert("Debes ingresar un nombre para la nueva ubicación.");
+    return;
+  }
+  
+  try {
+    const piuActualizado = { 
+      ...piuEnReubicacion.value, 
+      ubicacion: nuevaUbicacionNombre.value,
+      latitud: nuevasCoordenadas.value.lat,
+      longitud: nuevasCoordenadas.value.lng
+    };
+    await piuService.actualizar(piuEnReubicacion.value.id, piuActualizado);
+    alert(`📍 Equipo ${piuEnReubicacion.value.codigo} reubicado exitosamente.`);
+    piuEnReubicacion.value = null; // Cierra el panel de edición
+    await cargarDatos();
+  } catch (error) {
+    alert("Error al registrar la reubicación.");
+  }
+};
+
+const cancelarReubicacion = () => {
+  piuEnReubicacion.value = null;
 };
 
 // CU-009: Generar reportes de operación
@@ -107,7 +146,7 @@ const generarReporte = () => {
 
     <section class="quick-actions">
       <div class="grid-buttons">
-        <button class="action-btn" :class="{ active: vistaActiva === 'vigilancia' }" @click="vistaActiva = 'vigilancia'">
+        <button class="action-btn" :class="{ active: vistaActiva === 'vigilancia' }" @click="vistaActiva = 'vigilancia'; piuEnReubicacion = null;">
           <span class="icon">🔍</span> <span class="text">Vigilar Red</span>
         </button>
         <button class="action-btn" :class="{ active: vistaActiva === 'reubicacion' }" @click="vistaActiva = 'reubicacion'">
@@ -166,11 +205,36 @@ const generarReporte = () => {
       <section v-if="vistaActiva === 'reubicacion'" class="panel-lista animacion-panel">
         <div class="panel-header">
           <h3>📍 Registro de Reubicación Física</h3>
-          <input type="text" v-model="filtroBusqueda" class="buscador" placeholder="Buscar equipo a mover...">
+          <input v-if="!piuEnReubicacion" type="text" v-model="filtroBusqueda" class="buscador" placeholder="Buscar equipo a mover...">
         </div>
-        <p class="instruccion">Actualiza la ubicación en la base de datos cuando muevas físicamente un PIU a otro sector del campus.</p>
+        <p class="instruccion" v-if="!piuEnReubicacion">Actualiza la ubicación en la base de datos cuando muevas físicamente un PIU a otro sector del campus.</p>
 
-        <div class="tabla-responsive">
+        <div v-if="piuEnReubicacion" class="mapa-edicion-card">
+          <div class="edicion-header">
+            <h4>Reubicando: {{ piuEnReubicacion.codigo }}</h4>
+            <button class="btn-cerrar" @click="cancelarReubicacion">✖</button>
+          </div>
+          
+          <div class="edicion-form">
+            <label>Nuevo nombre de ubicación:</label>
+            <input type="text" v-model="nuevaUbicacionNombre" placeholder="Ej: Nueva Biblioteca" class="input-ubicacion">
+          </div>
+
+          <p class="map-hint">📍 Haz clic en el mapa para establecer las nuevas coordenadas:</p>
+          <div class="mapa-contenedor">
+            <l-map v-model:zoom="mapZoom" v-model:center="mapCenter" :use-global-leaflet="false" @click="seleccionarNuevaUbicacion">
+              <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"></l-tile-layer>
+              <l-marker v-if="nuevasCoordenadas.lat && nuevasCoordenadas.lng" :lat-lng="[nuevasCoordenadas.lat, nuevasCoordenadas.lng]"></l-marker>
+            </l-map>
+          </div>
+          
+          <div class="edicion-footer">
+            <small>Lat: {{ nuevasCoordenadas.lat || '---' }} | Lng: {{ nuevasCoordenadas.lng || '---' }}</small>
+            <button class="btn-guardar-reubicacion" @click="confirmarReubicacion">Confirmar Reubicación</button>
+          </div>
+        </div>
+
+        <div v-else class="tabla-responsive">
           <table class="data-table">
             <thead>
               <tr>
@@ -186,7 +250,7 @@ const generarReporte = () => {
                 <td class="ubicacion-destacada">{{ piu.ubicacion }}</td>
                 <td><span :class="['badge-estado', piu.estado.toLowerCase()]">{{ piu.estado }}</span></td>
                 <td>
-                  <button class="btn-accion info" @click="reubicarPiu(piu)">
+                  <button class="btn-accion info" @click="prepararReubicacion(piu)">
                     🔄 Cambiar Ubicación
                   </button>
                 </td>
@@ -201,9 +265,8 @@ const generarReporte = () => {
 </template>
 
 <style scoped>
+/* Tus estilos originales se mantienen intactos */
 .dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-/* Header estilo Operador (Turquesa/Teal) */
 .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px 30px; border-radius: 12px; border-left: 6px solid #16a085; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .welcome-text h2 { margin: 0; color: #2c3e50; font-size: 1.8rem; }
 .welcome-text p { margin: 5px 0 0; color: #7f8c8d; font-weight: 500; }
@@ -212,7 +275,6 @@ const generarReporte = () => {
 .btn-logout:hover { background: #c0392b; color: white; }
 .avatar { background: #16a085; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-/* Menú de Botones */
 .quick-actions { margin-bottom: 25px; }
 .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
 .action-btn { background: white; border: 1px solid #e0e6ed; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -221,7 +283,6 @@ const generarReporte = () => {
 .icon { font-size: 1.8rem; }
 .text { font-size: 0.9rem; color: #333; }
 
-/* Panel Principal */
 .panel-lista { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #16a085; }
 .animacion-panel { animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -232,7 +293,6 @@ const generarReporte = () => {
 .buscador:focus { outline: none; border-color: #16a085; }
 .instruccion { color: #7f8c8d; margin-bottom: 20px; font-size: 0.95rem; }
 
-/* Tablas */
 .tabla-responsive { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 600px; }
 .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
@@ -254,4 +314,21 @@ const generarReporte = () => {
 .ubicacion-destacada { color: #16a085; font-weight: bold; }
 .text-center { text-align: center; color: #7f8c8d; padding: 20px !important; }
 .cargando { text-align: center; margin-top: 50px; color: #7f8c8d; font-style: italic; }
+
+/* --- ESTILOS NUEVOS PARA EL MAPA DE EDICIÓN --- */
+.mapa-edicion-card { background: #fdfdfd; border: 1px solid #e0e6ed; border-radius: 8px; padding: 20px; margin-top: 15px; border-left: 5px solid #3498db; }
+.edicion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.edicion-header h4 { margin: 0; color: #2c3e50; font-size: 1.1rem; }
+.btn-cerrar { background: none; border: none; font-size: 1.2rem; color: #95a5a6; cursor: pointer; }
+.btn-cerrar:hover { color: #c0392b; }
+.edicion-form { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+.edicion-form label { font-size: 0.9rem; font-weight: bold; color: #555; }
+.input-ubicacion { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; width: 100%; max-width: 400px; }
+.input-ubicacion:focus { outline: none; border-color: #3498db; }
+.map-hint { margin: 0 0 8px 0; font-size: 0.9rem; color: #555; }
+.mapa-contenedor { height: 280px; width: 100%; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; z-index: 1; margin-bottom: 15px; }
+.edicion-footer { display: flex; justify-content: space-between; align-items: center; }
+.edicion-footer small { color: #7f8c8d; }
+.btn-guardar-reubicacion { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-guardar-reubicacion:hover { background: #2196f3; }
 </style>
