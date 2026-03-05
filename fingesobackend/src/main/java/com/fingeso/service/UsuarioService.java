@@ -31,7 +31,7 @@ public class UsuarioService {
 
     // REGISTRO DE USUARIO
     public Usuario guardarUsuario(Usuario usuario) {
-        // Validaciones para no repetir datos
+
         if (usuarioRepository.findByCorreo(usuario.getCorreo()).isPresent()) {
             throw new RuntimeException("El correo ya está registrado");
         }
@@ -41,14 +41,13 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    // LOGIN PERSONALIZADO (Correo + Credencial + Rol)
+    // LOGIN (Correo + Credencial + Rol)
     public Usuario loginUsuario(String correo, String numeroCredencial, Rol rol) {
-        // 1. Buscamos por correo
+
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findByCorreo(correo);
 
         if (usuarioEncontrado.isPresent()) {
             Usuario usuario = usuarioEncontrado.get();
-            // 2. Verificamos que la credencial Y el rol coincidan con ese usuario
             boolean credencialCorrecta = usuario.getNumeroCredencial().equals(numeroCredencial);
             boolean rolCorrecto = usuario.getRol() == rol;
 
@@ -56,10 +55,10 @@ public class UsuarioService {
                 return usuario;
             }
         }
-        return null; // Retorna null si falla alguna validación
+        return null;
     }
 
-    // Metodo para modificar usuario
+
     public Usuario actualizarUsuario(Long id, Usuario detalles) {
         Usuario existente = usuarioRepository.findById(id).orElse(null);
         if (existente != null) {
@@ -73,7 +72,7 @@ public class UsuarioService {
         return null;
     }
 
-    // Metodo para borrar usuario
+
     public void eliminarUsuario(Long id) {
         usuarioRepository.deleteById(id);
     }

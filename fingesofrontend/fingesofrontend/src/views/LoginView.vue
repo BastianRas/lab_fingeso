@@ -27,7 +27,7 @@ const handleLogin = async () => {
     
     console.log("Login exitoso:", usuario);
     
-    // --- LÓGICA DE REDIRECCIÓN POR ROL ---
+    
     switch (usuario.rol) {
       case 'ADMINISTRADOR':
         router.push('/admin');
@@ -39,22 +39,21 @@ const handleLogin = async () => {
         router.push('/operador');
         break;
         
-      // AQUI ESTA EL CAMBIO SOLICITADO:
       case 'ALUMNO':
-        router.push('/alumno'); // Antes era /home (recuerda renombrar la ruta en tu router)
+        router.push('/alumno'); 
         break;
       case 'PROFESOR':
-        router.push('/profesor'); // Nueva vista exclusiva para profes
+        router.push('/profesor'); 
         break;
       case 'FUNCIONARIO':
-        router.push('/funcionario'); // Nueva vista exclusiva para funcionarios
+        router.push('/funcionario'); 
         break;
         
       default:
         console.warn("Rol no reconocido:", usuario.rol);
-        router.push('/alumno'); // Por defecto mandamos a la vista de alumno si falla algo
+        router.push('/alumno'); 
     }
-    // -------------------------------------
+    
 
   } catch (err) {
     if (err.response && err.response.status === 401) {
@@ -159,11 +158,11 @@ label {
 input, select {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #ccc; /* Ajusté el borde a gris suave */
+  border: 1px solid #ccc; 
   border-radius: 6px;
   font-size: 1rem;
   box-sizing: border-box;
-  background-color: #ffffff; /* Fondo blanco para inputs */
+  background-color: #ffffff; 
 }
 
 input:focus, select:focus {
@@ -175,7 +174,7 @@ button {
   width: 100%;
   padding: 0.9rem;
   background-color: #ea7600;
-  color: white; /* Letra blanca para mejor contraste */
+  color: white; 
   border: none;
   border-radius: 6px;
   font-size: 1rem;

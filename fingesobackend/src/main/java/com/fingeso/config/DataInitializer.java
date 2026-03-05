@@ -18,7 +18,7 @@ public class DataInitializer {
                                    MatriculaAlumnoRepository matriculaRepo, NotaRepository notaRepo) {
         return args -> {
 
-            // 1. USUARIOS
+
             crearUsuarioSiNoExiste(usuarioRepo, "Admin", "Sistema", "admin@usach.cl", "00000000", "admin123", Rol.ADMINISTRADOR);
             crearUsuarioSiNoExiste(usuarioRepo, "Bastián", "Ramos", "visita@usach.cl", "11111111", "visita123", Rol.ALUMNO);
             crearUsuarioSiNoExiste(usuarioRepo, "Juan", "Gestor", "gestor@usach.cl", "22222222", "gestor123", Rol.GESTOR);
@@ -26,7 +26,7 @@ public class DataInitializer {
             crearUsuarioSiNoExiste(usuarioRepo, "Laura", "Profesora", "profe@usach.cl", "44444444", "profe123", Rol.PROFESOR);
             crearUsuarioSiNoExiste(usuarioRepo, "Carlos", "Funcionario", "func@usach.cl", "55555555", "func123", Rol.FUNCIONARIO);
 
-            // 2. PIUS
+
             if (piuRepo.count() == 0) {
                 piuRepo.save(new Piu("PIU-001", "Edificio M - Piso 1", "Activo", null, null));
                 piuRepo.save(new Piu("PIU-002", "Biblioteca Central", "Activo", -33.45038138777661, -70.68297743797304));
@@ -37,7 +37,7 @@ public class DataInitializer {
                 System.out.println("--> PIUs cargados en BD.");
             }
 
-            // 3. LUGARES (Nuevos datos reales para el mapa)
+
             if (lugarRepo.count() == 0) {
                 lugarRepo.save(new Lugar("Departamento Informática", "Laboratorios y oficinas administrativas", -33.44974399292344, -70.68734407424928));
                 lugarRepo.save(new Lugar("Biblioteca Central", "Entrada principal por Enrique Kirberg", -33.45033928657135, -70.68308472633363));
@@ -95,7 +95,7 @@ public class DataInitializer {
                         matricula.setClases(List.of(fingeso, sistemas));
                         matriculaRepo.save(matricula);
 
-                        // ✨ AQUÍ CREAMOS LAS NOTAS REALES EN LA BASE DE DATOS ✨
+
                         if (notaRepo.count() == 0) {
                             notaRepo.save(new Nota("PEP 1", 6.5, 30, alumno, fingeso));
                             notaRepo.save(new Nota("PEP 2", 5.2, 30, alumno, fingeso));
@@ -112,7 +112,7 @@ public class DataInitializer {
     }
 
     private void crearUsuarioSiNoExiste(UsuarioRepository repository, String nombre, String apellido, String correo, String credencial, String pass, Rol rol) {
-        // ✨ CORRECCIÓN: Verificamos por correo para evitar el error de llave duplicada
+
         if (repository.findByCorreo(correo).isEmpty()) {
             Usuario usuario = new Usuario();
             usuario.setNombre(nombre);

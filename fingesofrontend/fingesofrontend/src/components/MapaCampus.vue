@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router'; // ✨ IMPORTAMOS EL ENRUTADOR
+import { useRouter } from 'vue-router'; 
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LCircleMarker, LPolyline } from "@vue-leaflet/vue-leaflet";
 import L from "leaflet";
@@ -10,9 +10,9 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import piuService from '../services/piuService';
 import lugarService from '../services/lugarService';
 
-const router = useRouter(); // ✨ INICIAMOS EL ENRUTADOR
+const router = useRouter(); 
 
-// Coordenadas USACH (Centro aproximado: Foro/EAO)
+
 const zoom = ref(16);
 const center = ref([-33.448890, -70.684650]);
 const lugares = ref([]);
@@ -22,12 +22,12 @@ const piuSeleccionado = ref(null);
 const busqueda = ref("");
 const rutaCoordenadas = ref([]);
 
-// ✨ FUNCIÓN PARA VOLVER ATRÁS MAGÍCAMENTE
+
 const volverAtras = () => {
   router.back(); 
 };
 
-// Simulación de carga de PIUs y lugares desde el backend
+
 const cargarDatosMapa = async () => {
   try {
     const resPius = await piuService.obtenerTodos();
@@ -48,14 +48,14 @@ onMounted(() => {
   cargarDatosMapa();
 });
 
-// Función para buscar y centrar el mapa
+
 const buscarLugar = () => {
   const query = busqueda.value.toLowerCase();
   
-  // Buscar en lugares fijos
+  
   let encontrado = lugares.value.find(l => l.nombre.toLowerCase().includes(query));
   
-  // Si no es lugar fijo, buscar en PIUs
+  
   if (!encontrado) {
     encontrado = pius.value.find(p => p.codigo.toLowerCase().includes(query) || p.ubicacion.toLowerCase().includes(query));
     if (encontrado) {
@@ -76,7 +76,7 @@ const centrarEn = (coords) => {
   zoom.value = 18;
 };
 
-// Función para trazar ruta peatonal usando OpenRouteService
+
 const trazarRutaHacia = async (destino) => {
   if (!piuSeleccionado.value) {
     alert("Por favor, selecciona un PIU como punto de origen.");
@@ -201,14 +201,14 @@ const trazarRutaHacia = async (destino) => {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  height: 600px; /* Aumentado ligeramente para acomodar el nuevo botón */
+  height: 600px; 
   background: white;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-/* ✨ ESTILOS DEL NUEVO ENCABEZADO Y BOTÓN */
+
 .header-mapa {
   display: flex;
   align-items: center;
@@ -242,7 +242,7 @@ const trazarRutaHacia = async (destino) => {
   background: #f8f9fa;
   border-color: #3498db;
   color: #3498db;
-  transform: translateX(-2px); /* Pequeño efecto de moverse a la izquierda */
+  transform: translateX(-2px); 
 }
 
 .control-panel h3 {

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-// Importación del servicio (Verifica que la ruta ../services/ sea correcta)
+
 import eventoService from '../services/eventoService'; 
 
 const router = useRouter();
@@ -69,7 +69,7 @@ onMounted(async () => {
 <style scoped>
 .cartelera-page { font-family: 'Segoe UI', sans-serif; min-height: 100vh; background-color: #f4f6f9; }
 
-/* HEADER */
+
 .header { background: #2c3e50; color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .header h1 { margin: 0; font-size: 1.8rem; }
 .header p { margin: 0; opacity: 0.8; font-size: 0.9rem; }
@@ -78,11 +78,11 @@ onMounted(async () => {
 
 .content { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
 
-/* ESTADOS */
+
 .status-box { text-align: center; padding: 3rem; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 2rem; font-weight: bold; color: #777; }
 .error { color: #c0392b; background: #fff5f5; border: 1px solid #ffcccc; }
 
-/* GRILLA */
+
 .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
 
 .news-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; }
@@ -91,7 +91,7 @@ onMounted(async () => {
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .date { font-size: 0.85rem; color: #999; font-weight: bold; }
 
-/* ETIQUETAS */
+
 .tag { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: white; font-weight: bold; letter-spacing: 0.5px; }
 .red { background-color: #e74c3c; }
 .blue { background-color: #3498db; }

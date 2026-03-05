@@ -10,7 +10,7 @@ const mostrandoFormulario = ref(false);
 const mapCenter = ref([-33.448890, -70.684650]);
 const mapZoom = ref(16);
 
-// Función para traducir selección del mapa a coordenadas
+
 const seleccionarUbicacion = (evento) => {
   datosFormulario.value.latitud = evento.latlng.lat;
   datosFormulario.value.longitud = evento.latlng.lng;
@@ -167,7 +167,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos similares a los anteriores */
+
 .dashboard { padding: 2rem; background-color: #f4f4f4; min-height: 100vh; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .back-btn { background: #555; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }

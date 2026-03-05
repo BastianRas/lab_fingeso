@@ -9,20 +9,20 @@ const vistaActiva = ref('agenda');
 const agenda = ref([]); 
 const diaSeleccionado = ref(15); 
 
-// Tareas del día seleccionado
+
 const agendaDelDia = computed(() => {
   return agenda.value.filter(t => t.dia === diaSeleccionado.value);
 });
 
-// ✨ MAGIA: Ordenar cronológicamente para encontrar la PRÓXIMA tarea real
+
 const proximaTarea = computed(() => {
   const pendientes = agenda.value.filter(t => t.estado === 'Pendiente');
   if (pendientes.length === 0) return null;
   
-  // Ordena de menor a mayor día (ej: Día 2 va antes que Día 15)
+  
   pendientes.sort((a, b) => a.dia - b.dia);
   
-  // Devuelve la primera tarea que encuentre después de ordenar
+ 
   return pendientes[0];
 });
 
@@ -52,7 +52,7 @@ onMounted(() => {
     if (misTareasAsignadas && misTareasAsignadas.length > 0) {
       agenda.value = misTareasAsignadas.map((t, index) => ({
         id: index + 1,
-        // ✨ Leemos y convertimos el día correctamente
+       
         dia: parseInt(t.dia), 
         hora: t.hora, 
         titulo: t.titulo,
@@ -60,14 +60,14 @@ onMounted(() => {
         estado: t.estado || "Pendiente"
       }));
 
-      // Auto-seleccionar en el calendario el día de la próxima tarea
+     
       const next = proximaTarea.value;
       if (next) {
         diaSeleccionado.value = next.dia;
       }
 
     } else {
-      // Tareas de muestra si está vacío
+      
       agenda.value = [
         { id: 1, dia: 15, hora: "09:00 AM", titulo: "Reunión de Coordinación", ubicacion: "Sala de Reuniones - EAO", estado: "Pendiente" },
         { id: 2, dia: 15, hora: "11:30 AM", titulo: "Revisión de Inventario PIU", ubicacion: "Biblioteca Central", estado: "Pendiente" }
@@ -216,7 +216,7 @@ const irAlMapaParaLugar = (ubicacion) => { alert(`📍 Redirigiendo al mapa para
 </template>
 
 <style scoped>
-/* ESTILOS INTACTOS */
+
 .dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px 30px; border-radius: 12px; border-left: 6px solid #2980b9; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .welcome-text h2 { margin: 0; color: #2c3e50; font-size: 1.8rem; }

@@ -8,7 +8,7 @@ import notaService from '../services/notaService';
 const router = useRouter();
 const alumnoNombre = ref('');
 const matricula = ref(null);
-const vistaActiva = ref('horario'); // Por defecto en horario
+const vistaActiva = ref('horario'); 
 const asignaturasNotas = ref([]);
 
 const tiposCertificados = ref([
@@ -72,18 +72,18 @@ onMounted(async () => {
         matricula.value = await matriculaService.obtenerMatricula(user.usuarioId);
       }
 
-      // ✨ SECCIÓN DE NOTAS MEJORADA (Junta Backend + Memoria Local)
+      
       let notasBackend = [];
       try {
         const resNotas = await notaService.obtenerPorAlumno(user.usuarioId);
         notasBackend = resNotas.data || [];
       } catch(e) { console.warn("Cargando notas de memoria local..."); }
 
-      // Extraer notas asignadas por el profesor en modo mock
+      
       const notasMockGlobal = JSON.parse(localStorage.getItem('notas_mock') || '[]');
       const misNotasMock = notasMockGlobal.filter(n => n.alumno && n.alumno.usuarioId === user.usuarioId);
 
-      // Unificar ambas fuentes
+     
       const todasMisNotas = [...notasBackend, ...misNotasMock];
 
       const agrupadas = {};

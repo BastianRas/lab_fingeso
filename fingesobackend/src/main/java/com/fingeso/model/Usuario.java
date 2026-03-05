@@ -24,7 +24,7 @@ public class Usuario {
     private String correo; // Se mantiene como identificador único
 
     @Column(nullable = false, unique = true)
-    private String numeroCredencial; // Reemplaza el uso de contraseña en el login
+    private String numeroCredencial;
 
     private String contrasena; // Se mantiene en BD por si acaso, pero no se pide en este login
 

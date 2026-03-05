@@ -12,7 +12,7 @@ const clases = ref([]);
 const alumnosInscritos = ref([]); 
 const vistaActiva = ref('horario'); 
 
-// --- VARIABLES DE HORARIO ---
+
 const diasSemana = [ { id: 'L', nombre: 'Lunes' }, { id: 'M', nombre: 'Martes' }, { id: 'W', nombre: 'Miércoles' }, { id: 'J', nombre: 'Jueves' }, { id: 'V', nombre: 'Viernes' } ];
 const bloquesHorarios = [ { id: 1, hora: "08:15 - 09:35" }, { id: 2, hora: "09:50 - 11:10" }, { id: 3, hora: "11:25 - 12:45" }, { id: 4, hora: "13:45 - 15:05" }, { id: 5, hora: "15:20 - 16:40" }, { id: 6, hora: "16:55 - 18:15" }, { id: 7, hora: "18:45 - 20:05" }, { id: 8, hora: "20:05 - 21:25" }, { id: 9, hora: "21:25 - 22:45" } ];
 
@@ -36,7 +36,7 @@ const horarioGenerado = computed(() => {
   return grid;
 });
 
-// --- ASISTENCIA ---
+
 const cursoAsistenciaId = ref('');
 const listaAsistencia = ref([]);
 
@@ -60,12 +60,12 @@ const guardarAsistencia = () => {
   listaAsistencia.value = [];
 };
 
-// --- NOTAS ---
+
 const formNota = ref({ claseId: '', alumnoId: '', nombreEvaluacion: '', valor: '', ponderacion: '' });
 const enviando = ref(false);
 const mensaje = ref({ texto: '', tipo: '' });
 const idEditando = ref(null);
-const claseIdRealBD = ref(null); // ✨ NUEVO: Variable para sincronizar el ID falso con el real de la BD
+const claseIdRealBD = ref(null); 
 const notasRegistradas = ref([]);
 
 const mostrar = (vista) => vistaActiva.value = vistaActiva.value === vista ? null : vista;
@@ -108,7 +108,7 @@ onMounted(async () => {
 
 const primerCurso = () => clases.value.length > 0 ? clases.value[0] : null;
 
-// ✨ MODIFICADO: Ahora busca las notas del DataInitializer usando el nombre de la clase
+
 const cargarNotasDeClase = async () => {
   if (formNota.value.claseId) {
     let notasBD = [];
@@ -121,7 +121,7 @@ const cargarNotasDeClase = async () => {
                const resAlum = await notaService.obtenerPorAlumno(alumno.usuarioId);
                if (resAlum.data) {
                   const notasFiltradas = resAlum.data.filter(n => n.clase.nombre === claseSeleccionada.nombre);
-                  // Guardamos el ID real de la BD para poder editar sin errores
+                  
                   notasFiltradas.forEach(n => n.claseIdReal = n.clase.id);
                   notasBD.push(...notasFiltradas);
                }
@@ -140,7 +140,7 @@ const cargarNotasDeClase = async () => {
   }
 };
 
-// ✨ MODIFICADO: Envía el ID correcto a la BD
+
 const enviarNota = async () => {
   mensaje.value = { texto: '', tipo: '' };
   if (!formNota.value.claseId || !formNota.value.alumnoId || !formNota.value.nombreEvaluacion || !formNota.value.valor || !formNota.value.ponderacion) {
@@ -154,7 +154,7 @@ const enviarNota = async () => {
     valor: parseFloat(formNota.value.valor),
     ponderacion: parseInt(formNota.value.ponderacion),
     alumno: { usuarioId: formNota.value.alumnoId },
-    // Usa el ID real si existe (notas pre-cargadas), si no, usa el mock ID
+    
     clase: { id: (idEditando.value && claseIdRealBD.value) ? claseIdRealBD.value : formNota.value.claseId }
   };
 
@@ -186,7 +186,7 @@ const enviarNota = async () => {
   }
 };
 
-// ✨ MODIFICADO: Captura el ID real de la base de datos al presionar Editar
+
 const editarNota = (nota) => {
   idEditando.value = nota.id;
   formNota.value.alumnoId = nota.alumno.usuarioId;
@@ -197,7 +197,7 @@ const editarNota = (nota) => {
   mensaje.value = { texto: '✏️ Modo edición activado. Modifica los datos arriba.', tipo: 'exito' };
 };
 
-// ✨ MODIFICADO: Limpia la variable oculta
+
 const cancelarEdicion = () => {
   idEditando.value = null; 
   claseIdRealBD.value = null;

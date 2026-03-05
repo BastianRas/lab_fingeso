@@ -6,9 +6,9 @@ import lombok.Data;
 
 @Data
 public class LoginRequest {
-    private String correo;            // Mantenemos correo
-    private String numeroCredencial;  // Cambiamos contraseña por credencial
-    private Rol rol;// Agregamos rol
+    private String correo;
+    private String numeroCredencial;
+    private Rol rol;
 
     public String getCorreo() {
         return correo;

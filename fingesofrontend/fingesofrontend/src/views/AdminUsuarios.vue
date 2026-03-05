@@ -12,7 +12,7 @@ const datosFormulario = ref({
   nombre: '', apellido: '', correo: '', numeroCredencial: '', contrasena: '', rol: 'ALUMNO' 
 });
 
-// --- BASE DE DATOS MAESTRA DE LA UNIVERSIDAD ---
+
 const carrerasDisponibles = ref([
   { id: 1, nombre: "Ingeniería en Informática" },
   { id: 2, nombre: "Ingeniería Civil Industrial" }
@@ -35,11 +35,11 @@ const cursosDisponibles = ref([
   { id: 14, carreraId: 2, codigo: "IND-1002", nombre: "Economía y Mercado", horario: "V3 V4", sala: "EAO-102" }
 ]);
 
-// Variables Reactivas para los 3 roles principales
+
 const datosAlumno = ref({ carreraId: '', estadoMatricula: 'ACTIVA', cursosIds: [] });
 const nuevaTarea = ref({ titulo: '', ubicacion: '', hora: '', dia: 15 });
 const tareasFuncionario = ref([]);
-const datosProfesor = ref({ cursosIds: [] }); // ✨ NUEVO: Para guardar los cursos del profesor
+const datosProfesor = ref({ cursosIds: [] }); 
 
 const cursosFiltrados = computed(() => {
   if (!datosAlumno.value.carreraId) return [];
@@ -63,7 +63,7 @@ const toggleCursoAlumno = (cursoId) => {
   else datosAlumno.value.cursosIds.push(cursoId);
 };
 
-// ✨ NUEVO: Asignar o quitar un curso al Profesor
+
 const toggleCursoProfesor = (cursoId) => {
   const index = datosProfesor.value.cursosIds.indexOf(cursoId);
   if (index > -1) datosProfesor.value.cursosIds.splice(index, 1);
@@ -120,7 +120,7 @@ const guardarUsuario = async () => {
        localStorage.setItem('tareas_admin', JSON.stringify(todas));
        alert(`✅ Agenda actualizada. Funcionario con ${tareasFuncionario.value.length} tareas.`);
     } 
-    // ✨ NUEVO: Guardar al Profesor
+    
     else if (datosFormulario.value.rol === 'PROFESOR') {
        const clasesAsignadas = cursosDisponibles.value.filter(c => datosProfesor.value.cursosIds.includes(c.id));
        const todas = JSON.parse(localStorage.getItem('profesor_admin') || '{}');
@@ -159,7 +159,7 @@ const cargarEdicion = (usuario) => {
       datosAlumno.value = { carreraId: carreraObj ? carreraObj.id : '', estadoMatricula: m.estado || 'ACTIVA', cursosIds: m.cursos ? m.cursos.map(c => c.id) : [] };
     }
   }
-  // ✨ NUEVO: Cargar los cursos del profesor al editarlo
+  
   else if (usuario.rol === 'PROFESOR') {
     const profesGuardados = JSON.parse(localStorage.getItem('profesor_admin') || '{}');
     const cursosAsignados = profesGuardados[usuario.numeroCredencial] || [];

@@ -2,16 +2,16 @@
 import { ref, onMounted } from 'vue';
 import eventoService from '../services/eventoService';
 
-// Variable vacía que se llenará con los datos de la base de datos
+
 const noticias = ref([]);
 const cargando = ref(true);
 
 onMounted(async () => {
   try {
-    // Llamamos al backend para traer los eventos creados por el administrador
+    
     const respuesta = await eventoService.obtenerTodos();
     
-    // Invertimos el arreglo para que los eventos más nuevos (los últimos creados) salgan arriba
+    
     noticias.value = respuesta.data.reverse();
   } catch (error) {
     console.error("Error al cargar la cartelera:", error);
@@ -66,7 +66,7 @@ onMounted(async () => {
   background: white;
   padding: 15px;
   border-radius: 12px;
-  border-left: 4px solid #ea7600; /* Color Naranja USACH */
+  border-left: 4px solid #ea7600; 
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   transition: transform 0.2s;
   margin-bottom: 10px;

@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import piuService from '../services/piuService';
-// Nuevas importaciones para el mapa
+
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 
@@ -10,16 +10,16 @@ const router = useRouter();
 const operadorNombre = ref('');
 const pius = ref([]);
 const cargando = ref(true);
-const vistaActiva = ref('vigilancia'); // 'vigilancia' | 'reubicacion' | 'reportes'
+const vistaActiva = ref('vigilancia'); 
 
-// Variables para el mapa de reubicación
+
 const piuEnReubicacion = ref(null);
 const mapCenter = ref([-33.448890, -70.684650]);
 const mapZoom = ref(16);
 const nuevaUbicacionNombre = ref('');
 const nuevasCoordenadas = ref({ lat: null, lng: null });
 
-// Filtros para la vista
+
 const filtroBusqueda = ref('');
 
 const piusFiltrados = computed(() => {
@@ -73,18 +73,18 @@ const reportarFalla = async (piu) => {
   }
 };
 
-// --- NUEVA LÓGICA DE REUBICACIÓN CON MAPA ---
+
 
 const prepararReubicacion = (piu) => {
   piuEnReubicacion.value = piu;
   nuevaUbicacionNombre.value = piu.ubicacion;
   nuevasCoordenadas.value = { lat: piu.latitud || null, lng: piu.longitud || null };
   
-  // Si el PIU ya tenía coordenadas, centramos el mapa ahí
+  
   if (piu.latitud && piu.longitud) {
     mapCenter.value = [piu.latitud, piu.longitud];
   } else {
-    mapCenter.value = [-33.448890, -70.684650]; // Centro por defecto Usach
+    mapCenter.value = [-33.448890, -70.684650]; 
   }
 };
 
@@ -108,7 +108,7 @@ const confirmarReubicacion = async () => {
     };
     await piuService.actualizar(piuEnReubicacion.value.id, piuActualizado);
     alert(`📍 Equipo ${piuEnReubicacion.value.codigo} reubicado exitosamente.`);
-    piuEnReubicacion.value = null; // Cierra el panel de edición
+    piuEnReubicacion.value = null; 
     await cargarDatos();
   } catch (error) {
     alert("Error al registrar la reubicación.");
@@ -265,7 +265,7 @@ const generarReporte = () => {
 </template>
 
 <style scoped>
-/* Tus estilos originales se mantienen intactos */
+
 .dashboard-container { padding: 20px; background-color: #f4f6f8; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px 30px; border-radius: 12px; border-left: 6px solid #16a085; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .welcome-text h2 { margin: 0; color: #2c3e50; font-size: 1.8rem; }
@@ -315,7 +315,7 @@ const generarReporte = () => {
 .text-center { text-align: center; color: #7f8c8d; padding: 20px !important; }
 .cargando { text-align: center; margin-top: 50px; color: #7f8c8d; font-style: italic; }
 
-/* --- ESTILOS NUEVOS PARA EL MAPA DE EDICIÓN --- */
+
 .mapa-edicion-card { background: #fdfdfd; border: 1px solid #e0e6ed; border-radius: 8px; padding: 20px; margin-top: 15px; border-left: 5px solid #3498db; }
 .edicion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .edicion-header h4 { margin: 0; color: #2c3e50; font-size: 1.1rem; }

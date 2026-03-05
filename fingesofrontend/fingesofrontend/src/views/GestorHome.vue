@@ -37,7 +37,7 @@ onMounted(() => {
     gestorNombre.value = user.nombre;
     cargarDatos();
   } else {
-    router.push('/'); // Si no es gestor, lo saca
+    router.push('/'); 
   }
 });
 
@@ -164,7 +164,7 @@ const reiniciarRemoto = (piuCodigo) => {
 .btn-logout:hover { background: #c0392b; color: white; }
 .avatar { background: #8e44ad; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-/* Tarjetas de Métricas */
+
 .metricas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
 .metrica-card { background: white; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 .metrica-valor { font-size: 2.5rem; font-weight: bold; color: #2c3e50; }
@@ -174,10 +174,10 @@ const reiniciarRemoto = (piuCodigo) => {
 .metrica-card.mantenimiento { border-bottom: 4px solid #f39c12; }
 .metrica-card.inactivos { border-bottom: 4px solid #e74c3c; }
 
-/* Grid Principal */
+
 .grid-principal { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 
-/* Panel de Lista (Tabla) */
+
 .panel-lista { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .panel-header h3 { margin: 0; color: #2c3e50; font-size: 1.3rem; }
@@ -202,7 +202,7 @@ const reiniciarRemoto = (piuCodigo) => {
 .btn-accion:hover { opacity: 0.9; }
 .ok-text { color: #27ae60; font-weight: bold; font-size: 0.9rem; }
 
-/* Panel Lateral */
+
 .panel-lateral { display: flex; flex-direction: column; gap: 20px; }
 .info-card { background: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .icon-big { font-size: 2.5rem; display: block; margin-bottom: 10px; }
@@ -211,7 +211,7 @@ const reiniciarRemoto = (piuCodigo) => {
 .btn-outline { background: transparent; color: #8e44ad; border: 2px solid #8e44ad; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 .btn-outline:hover { background: #8e44ad; color: white; }
 
-/* Responsivo */
+
 @media (max-width: 768px) {
   .grid-principal { grid-template-columns: 1fr; }
 }

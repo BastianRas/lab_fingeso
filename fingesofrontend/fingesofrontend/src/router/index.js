@@ -1,44 +1,44 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 
-// Vistas de Roles
+
 import AlumnoView from '../views/AlumnoView.vue'
 import ProfesorView from '../views/ProfesorView.vue'
 import FuncionarioView from '../views/FuncionarioView.vue'
 
-// Vistas de Admin y otros
+
 import AdminHome from '../views/AdminHome.vue'
 import AdminPius from '../views/AdminPius.vue'
 import AdminEventos from '../views/AdminEventos.vue'
 import AdminUsuarios from '../views/AdminUsuarios.vue'
 import AdminLugares from '../views/AdminLugares.vue'
-import AdminSalas from '../views/AdminSalas.vue' // ✨ NUEVO IMPORT AGREGADO
+import AdminSalas from '../views/AdminSalas.vue' 
 import GestorHome from '../views/GestorHome.vue'
 import OperadorHome from '../views/OperadorHome.vue'
 
-// Componentes funcionales (Mapa y Cartelera)
-// Nota: MapaCampus lo importamos como vista para que tenga su propia página
+
+
 import MapaCampus from '../components/MapaCampus.vue' 
 import CarteleraView from '../views/CarteleraView.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: LoginView },
 
-  // --- RUTAS DE ROLES ---
+  
   { path: '/alumno', name: 'alumno', component: AlumnoView },
   { path: '/profesor', name: 'profesor', component: ProfesorView },
   { path: '/funcionario', name: 'funcionario', component: FuncionarioView },
 
-  // --- HERRAMIENTAS COMUNES ---
-  { path: '/mapa', name: 'mapa', component: MapaCampus }, // Nueva ruta del mapa
+  
+  { path: '/mapa', name: 'mapa', component: MapaCampus }, 
   { path: '/cartelera', name: 'cartelera', component: CarteleraView },
 
-  // --- RUTAS ADMINISTRATIVAS ---
+
   { path: '/admin', name: 'admin', component: AdminHome },
   { path: '/admin/pius', name: 'admin-pius', component: AdminPius },
   { path: '/admin/eventos', name: 'admin-eventos', component: AdminEventos },
   { path: '/admin/usuarios', name: 'admin-usuarios', component: AdminUsuarios },
-  { path: '/admin/salas', name: 'admin-salas', component: AdminSalas }, // ✨ NUEVA RUTA AGREGADA
+  { path: '/admin/salas', name: 'admin-salas', component: AdminSalas }, 
   { path: '/admin/lugares', name: 'admin-lugares', component: AdminLugares },
   { path: '/gestor', name: 'gestor', component: GestorHome },
   { path: '/operador', name: 'operador', component: OperadorHome },

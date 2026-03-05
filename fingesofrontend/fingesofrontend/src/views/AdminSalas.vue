@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// Lista maestra por defecto
+
 const cursos = ref([
   { id: 1, carreraId: 1, codigo: "CBM-1000", nombre: "Álgebra I", horario: "L1 M1 W1", sala: "A-101" },
   { id: 2, carreraId: 1, codigo: "CBM-1001", nombre: "Cálculo I", horario: "M2 J2 V1", sala: "A-102" },
@@ -23,7 +23,7 @@ const cursos = ref([
 ]);
 
 onMounted(() => {
-  // Cargamos si ya existen cambios previos guardados
+  
   const storedCursos = JSON.parse(localStorage.getItem('cursos_globales'));
   if (storedCursos && storedCursos.length > 0) {
     cursos.value = storedCursos;
@@ -31,10 +31,10 @@ onMounted(() => {
 });
 
 const guardarAsignaciones = () => {
-  // 1. Guardamos la matriz principal
+  
   localStorage.setItem('cursos_globales', JSON.stringify(cursos.value));
 
-  // 2. Propagamos los cambios a los ALUMNOS matriculados
+  
   const matriculas = JSON.parse(localStorage.getItem('matriculas_admin') || '{}');
   for (let rut in matriculas) {
     if (matriculas[rut].cursos) {
@@ -48,7 +48,7 @@ const guardarAsignaciones = () => {
   }
   localStorage.setItem('matriculas_admin', JSON.stringify(matriculas));
 
-  // 3. Propagamos los cambios a los PROFESORES
+  
   const profes = JSON.parse(localStorage.getItem('profesor_admin') || '{}');
   for (let rut in profes) {
     profes[rut] = profes[rut].map(cAsignado => {
